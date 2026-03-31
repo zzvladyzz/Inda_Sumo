@@ -49,6 +49,9 @@
 
 /* USER CODE BEGIN PV */
 uint16_t adc_value[8];
+
+
+volatile uint16_t IR_38KHZ=0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -125,20 +128,23 @@ HAL_GPIO_WritePin(EN_MOTOR_GPIO_Port, EN_MOTOR_Pin, GPIO_PIN_RESET);
 	  		sprintf(buffer," RR= %u ",adc_value[0]);
 	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
 */
+		sprintf(buffer," IR= %u ",IR_38KHZ);
+		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+
+
 	  		sprintf(buffer," Boton= %u ",adc_value[4]);
-	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
+	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
 
 	  		sprintf(buffer," A_ML= %u ",adc_value[5]);
-	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
+	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
 
 	  		sprintf(buffer," A_MR= %u ",adc_value[6]);
-	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
+	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
 
 	  		sprintf(buffer," voltage= %u \r\n",adc_value[7]);
-	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
+	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
 
-	  		HAL_Delay(100);
-
+	  		HAL_Delay(1000);
 
     /* USER CODE END WHILE */
 
@@ -194,6 +200,13 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    if(GPIO_Pin == GPIO_PIN_8) // Verificamos que sea el pin 8 el que activó la interrupción
+    {
+       IR_38KHZ++;
+    }
+}
 void motores(uint16_t MotorIzquierdo,uint16_t MotorDerecho)
 {
 	__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_1,MotorDerecho);
