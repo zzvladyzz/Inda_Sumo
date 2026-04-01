@@ -119,15 +119,35 @@ HAL_GPIO_WritePin(EN_MOTOR_GPIO_Port, EN_MOTOR_Pin, GPIO_PIN_RESET);
   while (1)
   {
 	  char buffer[30];
-/*	  		sprintf(buffer,"LL= %u",adc_value[3]);
+	  /*
+	  		sprintf(buffer,"LL= %u",adc_value[3]);
 	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
 	  		sprintf(buffer,"  LR=  %u",adc_value[2]);
 	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
 	  		sprintf(buffer,"  RL= %u",adc_value[1]);
 	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
-	  		sprintf(buffer," RR= %u ",adc_value[0]);
+	  		sprintf(buffer," RR= %u \r\n",adc_value[0]);
 	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
-*/
+	  		*/
+	  		if(HAL_GPIO_ReadPin(Left_Line_GPIO_Port, Left_Line_Pin)==1){
+	  			HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, 1);
+	  		}
+	  		else{
+	  			HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, 0);
+	  		}
+	  		if(HAL_GPIO_ReadPin(Back_Line_GPIO_Port, Back_Line_Pin)==1){
+	  			  			HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, 1);
+	  			  		}
+	  			  		else{
+	  			  			HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, 0);
+	  			  		}
+	  		if(HAL_GPIO_ReadPin(Right_Line_GPIO_Port, Right_Line_Pin)==1){
+	  			  			HAL_GPIO_WritePin(LED_OK_GPIO_Port, LED_OK_Pin, 1);
+	  			  		}
+	  			  		else{
+	  			  			HAL_GPIO_WritePin(LED_OK_GPIO_Port, LED_OK_Pin, 0);
+	  			  		}
+
 		sprintf(buffer," IR= %u ",IR_38KHZ);
 		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
 
