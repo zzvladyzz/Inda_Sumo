@@ -28,6 +28,7 @@
 /* USER CODE BEGIN Includes */
 #include "stdio.h"
 #include "string.h"
+#include "stdbool.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -49,8 +50,11 @@
 
 /* USER CODE BEGIN PV */
 uint16_t adc_value[8];
+uint16_t array[14]={};
 
-
+volatile uint8_t RC5_trama=0u;
+volatile uint8_t RC5_count=0u;
+volatile bool 	RC5_state=false;
 volatile uint16_t IR_38KHZ=0;
 /* USER CODE END PV */
 
@@ -98,6 +102,7 @@ int main(void)
   MX_USART3_UART_Init();
   MX_ADC1_Init();
   MX_TIM1_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 
 HAL_ADC_Start_DMA(&hadc1, (uint32_t *)adc_value, 8);
@@ -147,11 +152,32 @@ HAL_GPIO_WritePin(EN_MOTOR_GPIO_Port, EN_MOTOR_Pin, GPIO_PIN_RESET);
 	  			  		else{
 	  			  			HAL_GPIO_WritePin(LED_OK_GPIO_Port, LED_OK_Pin, 0);
 	  			  		}
+	  		if(RC5_state==true)
+	  		{
+	  			RC5_state=false;
+	  			uint16_t address=(RC5_trama>>6)&0x1F;
+	  			uint16_t command=(RC5_trama)&0x3F;
+	  			uint16_t start=(RC5_trama>>12)&0x03;
+	  			uint16_t toggle=(RC5_trama>>11)&0x01;
 
-		sprintf(buffer," IR= %u ",IR_38KHZ);
-		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+	  			sprintf(buffer," start %u ",start);
+	  			HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+	  			sprintf(buffer," toogle %u ",toggle);
+	  			HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+	  			sprintf(buffer," address %u ",address);
+	  			HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+
+	  			sprintf(buffer," command %u ",command);
+	  			HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
 
 
+	  			sprintf(buffer," \r\n ");
+				HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+				HAL_Delay(500);
+				HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+	  		}
+
+/*
 	  		sprintf(buffer," Boton= %u ",adc_value[4]);
 	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
 
@@ -164,7 +190,7 @@ HAL_GPIO_WritePin(EN_MOTOR_GPIO_Port, EN_MOTOR_Pin, GPIO_PIN_RESET);
 	  		sprintf(buffer," voltage= %u \r\n",adc_value[7]);
 	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
 
-	  		HAL_Delay(1000);
+	  		HAL_Delay(1000);*/
 
     /* USER CODE END WHILE */
 
@@ -220,11 +246,40 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+    if (htim->Instance == TIM2) {
+
+    	uint8_t RC5_bit=(HAL_GPIO_ReadPin(IR_38KHZ_GPIO_Port, IR_38KHZ_Pin)==GPIO_PIN_SET)?0:1;
+    	HAL_GPIO_TogglePin(SERVO_GPIO_Port, SERVO_Pin);
+    	RC5_trama=(RC5_trama<<1)|RC5_bit;
+    	RC5_count++;
+    	__HAL_TIM_SET_AUTORELOAD(&htim2,1777);
+    	    	if(RC5_count>=14)
+    	    	{
+    	    		HAL_TIM_Base_Stop_IT(&htim2);
+    	    		RC5_state=true;
+    	    		__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_8);
+
+
+    	    	}
+    }
+}
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-    if(GPIO_Pin == GPIO_PIN_8) // Verificamos que sea el pin 8 el que activó la interrupción
+    if(GPIO_Pin == GPIO_PIN_8)
     {
-       IR_38KHZ++;
+        // 1. Bloqueamos el EXTI para que los cambios de bit no reinicien el Timer
+            HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
+
+            RC5_trama = 1;
+            RC5_count = 1;
+
+            // 2. Sincronización: Esperamos 1333us para leer el primer bit en su zona estable
+            __HAL_TIM_SET_AUTORELOAD(&htim2, 1332);
+            __HAL_TIM_SET_COUNTER(&htim2, 0);
+            HAL_TIM_Base_Start_IT(&htim2);
+
     }
 }
 void motores(uint16_t MotorIzquierdo,uint16_t MotorDerecho)

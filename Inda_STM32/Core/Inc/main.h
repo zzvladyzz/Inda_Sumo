@@ -89,6 +89,8 @@ void Error_Handler(void);
 #define Output_4_GPIO_Port GPIOB
 #define EN_MOTOR_Pin GPIO_PIN_12
 #define EN_MOTOR_GPIO_Port GPIOA
+#define SERVO_Pin GPIO_PIN_15
+#define SERVO_GPIO_Port GPIOA
 #define Right_Line_Pin GPIO_PIN_3
 #define Right_Line_GPIO_Port GPIOB
 #define Back_Line_Pin GPIO_PIN_4

@@ -58,7 +58,7 @@ void MX_GPIO_Init(void)
                           |LED_ALARMA_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(EN_MOTOR_GPIO_Port, EN_MOTOR_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, EN_MOTOR_Pin|SERVO_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : LED_OK_Pin LED_1_Pin LED_2_Pin */
   GPIO_InitStruct.Pin = LED_OK_Pin|LED_1_Pin|LED_2_Pin;
@@ -76,12 +76,12 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : EN_MOTOR_Pin */
-  GPIO_InitStruct.Pin = EN_MOTOR_Pin;
+  /*Configure GPIO pins : EN_MOTOR_Pin SERVO_Pin */
+  GPIO_InitStruct.Pin = EN_MOTOR_Pin|SERVO_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(EN_MOTOR_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pins : Right_Line_Pin Back_Line_Pin Left_Line_Pin */
   GPIO_InitStruct.Pin = Right_Line_Pin|Back_Line_Pin|Left_Line_Pin;
@@ -91,12 +91,12 @@ void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : IR_38KHZ_Pin */
   GPIO_InitStruct.Pin = IR_38KHZ_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(IR_38KHZ_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
 }
