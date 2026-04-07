@@ -50,9 +50,14 @@
 
 /* USER CODE BEGIN PV */
 uint16_t adc_value[8];
-uint16_t array[14]={};
+uint16_t array[15]={};
 
-volatile uint8_t RC5_trama=0u;
+
+uint16_t start=0u;
+uint16_t toggle=0u;
+uint16_t address=0u;
+uint16_t command=0u;
+volatile uint16_t RC5_trama=0u;
 volatile uint8_t RC5_count=0u;
 volatile bool 	RC5_state=false;
 volatile uint16_t IR_38KHZ=0;
@@ -135,30 +140,33 @@ HAL_GPIO_WritePin(EN_MOTOR_GPIO_Port, EN_MOTOR_Pin, GPIO_PIN_RESET);
 	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
 	  		*/
 	  		if(HAL_GPIO_ReadPin(Left_Line_GPIO_Port, Left_Line_Pin)==1){
-	  			HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, 1);
+	  			//HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, 1);
 	  		}
 	  		else{
-	  			HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, 0);
+	  			//HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, 0);
 	  		}
 	  		if(HAL_GPIO_ReadPin(Back_Line_GPIO_Port, Back_Line_Pin)==1){
-	  			  			HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, 1);
+	  			  			//HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, 1);
 	  			  		}
 	  			  		else{
-	  			  			HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, 0);
+	  			  			//HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, 0);
 	  			  		}
 	  		if(HAL_GPIO_ReadPin(Right_Line_GPIO_Port, Right_Line_Pin)==1){
-	  			  			HAL_GPIO_WritePin(LED_OK_GPIO_Port, LED_OK_Pin, 1);
+	  			  			//HAL_GPIO_WritePin(LED_OK_GPIO_Port, LED_OK_Pin, 1);
 	  			  		}
 	  			  		else{
-	  			  			HAL_GPIO_WritePin(LED_OK_GPIO_Port, LED_OK_Pin, 0);
+	  			  			//HAL_GPIO_WritePin(LED_OK_GPIO_Port, LED_OK_Pin, 0);
 	  			  		}
 	  		if(RC5_state==true)
 	  		{
-	  			RC5_state=false;
-	  			uint16_t address=(RC5_trama>>6)&0x1F;
-	  			uint16_t command=(RC5_trama)&0x3F;
-	  			uint16_t start=(RC5_trama>>12)&0x03;
-	  			uint16_t toggle=(RC5_trama>>11)&0x01;
+
+	  			// Se desfasa 2 posiciones mas para evitar leer en rebote de ir
+	  			 start=(RC5_trama>>14)&0x03;
+	  			 if(start==1){
+	  			 toggle=(RC5_trama>>13)&0x01;
+	  			 address=(RC5_trama>>8)&0x1F;
+	  			 command=(RC5_trama>>2)&0x3F;
+	  			 }
 
 	  			sprintf(buffer," start %u ",start);
 	  			HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
@@ -170,11 +178,28 @@ HAL_GPIO_WritePin(EN_MOTOR_GPIO_Port, EN_MOTOR_Pin, GPIO_PIN_RESET);
 	  			sprintf(buffer," command %u ",command);
 	  			HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
 
-
 	  			sprintf(buffer," \r\n ");
 				HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
-				HAL_Delay(500);
+
+				//HAL_Delay(1000);
+	  			RC5_state=false;
 				HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+	  		}
+	  		if(address==10 && command==9)
+	  		{
+	  			HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_RESET);
+	  			HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_SET);
+	  			start=0;
+	  			address=0;
+	  			command=0;
+	  		}
+	  		else if(address==0 && command==8)
+	  		{
+	  			HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_SET);
+	  			HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_RESET);
+	  			start=0;
+	  			address=0;
+	  			command=0;
 	  		}
 
 /*
@@ -250,18 +275,30 @@ void SystemClock_Config(void)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     if (htim->Instance == TIM2) {
 
-    	uint8_t RC5_bit=(HAL_GPIO_ReadPin(IR_38KHZ_GPIO_Port, IR_38KHZ_Pin)==GPIO_PIN_SET)?0:1;
+    	/*Codigo pruebas
+		array[RC5_count]=HAL_GPIO_ReadPin(IR_38KHZ_GPIO_Port, IR_38KHZ_Pin);
     	HAL_GPIO_TogglePin(SERVO_GPIO_Port, SERVO_Pin);
+
+    	for (uint8_t var = 0; var < 15; ++var) {
+    		sprintf(buffer," - %u",array[var]);
+    		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+    	}
+    	sprintf(buffer," \r\n ");
+    	HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+    	HAL_Delay(1000);
+    	HAL_GPIO_WritePin(LED_OK_GPIO_Port, LED_OK_Pin, 1);
+    	HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+    	*/
+
+    	uint8_t RC5_bit=(HAL_GPIO_ReadPin(IR_38KHZ_GPIO_Port, IR_38KHZ_Pin)==GPIO_PIN_SET)?1:0;
     	RC5_trama=(RC5_trama<<1)|RC5_bit;
     	RC5_count++;
     	__HAL_TIM_SET_AUTORELOAD(&htim2,1777);
-    	    	if(RC5_count>=14)
+    	    	if(RC5_count>=15)
     	    	{
     	    		HAL_TIM_Base_Stop_IT(&htim2);
     	    		RC5_state=true;
     	    		__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_8);
-
-
     	    	}
     }
 }
@@ -272,8 +309,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
         // 1. Bloqueamos el EXTI para que los cambios de bit no reinicien el Timer
             HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
 
-            RC5_trama = 1;
-            RC5_count = 1;
+            RC5_trama = 0;
+            RC5_count = 0;
 
             // 2. Sincronización: Esperamos 1333us para leer el primer bit en su zona estable
             __HAL_TIM_SET_AUTORELOAD(&htim2, 1332);
