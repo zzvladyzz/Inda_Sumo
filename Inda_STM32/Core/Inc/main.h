@@ -94,12 +94,12 @@ void Error_Handler(void);
 #define Right_Line_Pin GPIO_PIN_3
 #define Right_Line_GPIO_Port GPIOB
 #define Right_Line_EXTI_IRQn EXTI3_IRQn
-#define Back_Line_Pin GPIO_PIN_4
-#define Back_Line_GPIO_Port GPIOB
-#define Back_Line_EXTI_IRQn EXTI4_IRQn
-#define Left_Line_Pin GPIO_PIN_5
+#define Left_Line_Pin GPIO_PIN_4
 #define Left_Line_GPIO_Port GPIOB
-#define Left_Line_EXTI_IRQn EXTI9_5_IRQn
+#define Left_Line_EXTI_IRQn EXTI4_IRQn
+#define Back_Line_Pin GPIO_PIN_5
+#define Back_Line_GPIO_Port GPIOB
+#define Back_Line_EXTI_IRQn EXTI9_5_IRQn
 #define IR_38KHZ_Pin GPIO_PIN_8
 #define IR_38KHZ_GPIO_Port GPIOB
 #define IR_38KHZ_EXTI_IRQn EXTI9_5_IRQn

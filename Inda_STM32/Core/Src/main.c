@@ -94,6 +94,7 @@ void motores(Motores *motor);
 void detener();
 void print();
 void printRC5();
+void RC5_recepcion();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -160,40 +161,46 @@ motores(&motorZumo);
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  	  RC5_recepcion();	//Aca se reciben datos y se obtiene address y command
 
-	  if(RC5_state==true)
+	  	  if(address==0x1F && command==0x3F)
+	  	  {
+	  		  detener();
+	  		  start=0;
+	  		  address=0;
+	  		  command=0;
+	  	  }
+	  	  		if(address==1 && command==9)
 	  	  		{
+	  	  			standby++;
+	  	  			if(standby==1)
+	  	  			{
+	  	  				menu=preparado;
+	  	  				HAL_GPIO_WritePin(LED_OK_GPIO_Port, LED_OK_Pin, GPIO_PIN_SET);
 
-	  	  			// Se desfasa 2 posiciones mas para evitar leer en rebote de ir
-	  	  			 start=(RC5_trama>>14)&0x03;
-	  	  			 if(start==1){
-	  	  			 toggle=(RC5_trama>>13)&0x01;
-	  	  			 address=(RC5_trama>>8)&0x1F;
-	  	  			 command=(RC5_trama>>2)&0x3F;
-	  	  			 }
-	  	  			 printRC5();
-	  	  			RC5_state=false;
-	  				HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
-	  	            HAL_NVIC_EnableIRQ(EXTI4_IRQn);
-	  	            HAL_NVIC_EnableIRQ(EXTI3_IRQn);
-
-	  	  		}
-	  	  		if(address==10 && command==9)
-	  	  		{
-	  	  			HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_RESET);
-	  	  			HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_SET);
+	  	  			}
+	  	  			else if(standby ==2)
+	  	  			{
+	  	  				menu=combate;
+	  	  			motorZumo.PWM_Left=200;
+	  	  							motorZumo.PWM_Right=200;
+	  	  							motorZumo.direccion=adelante;
+	  	  			HAL_GPIO_WritePin(LED_OK_GPIO_Port, LED_OK_Pin, GPIO_PIN_RESET);
+	  	  			standby=0;
+	  	  			}
 	  	  			start=0;
 	  	  			address=0;
 	  	  			command=0;
 	  	  		}
-	  	  		else if(address==0 && command==8)
-	  	  		{
-	  	  			HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_SET);
-	  	  			HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_RESET);
-	  	  			start=0;
-	  	  			address=0;
-	  	  			command=0;
-	  	  		}
+	 switch (menu) {
+		case combate:
+
+				motorZumo.enable=true;
+				motores(&motorZumo);
+			break;
+		default:
+			break;
+	}
 
 
 
@@ -302,13 +309,21 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 
     }
     else if (GPIO_Pin == Left_Line_Pin) {
-    	HAL_GPIO_TogglePin(LED_1_GPIO_Port, LED_1_Pin);
+    	motorZumo.PWM_Left=200;
+    	motorZumo.PWM_Right=200;
+    	motorZumo.direccion=atras;
+
 	}
     else if (GPIO_Pin == Right_Line_Pin) {
-    	HAL_GPIO_TogglePin(LED_2_GPIO_Port, LED_2_Pin);
+    	motorZumo.PWM_Left=200;
+    	    	motorZumo.PWM_Right=200;
+    	    	motorZumo.direccion=atras;
+    	    	HAL_GPIO_TogglePin(LED_1_GPIO_Port, LED_1_Pin);
     	}
     else if (GPIO_Pin == Back_Line_Pin) {
-    	HAL_GPIO_TogglePin(LED_OK_GPIO_Port, LED_OK_Pin);
+    	motorZumo.PWM_Left=200;
+    	    	    	motorZumo.PWM_Right=200;
+    	    	    	motorZumo.direccion=adelante;
     	}
 
 }
@@ -426,6 +441,26 @@ void printRC5()
 		sprintf(buffer," \r\n ");
 	HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
 
+}
+void RC5_recepcion()
+{
+	  if(RC5_state==true)
+	  	  		{
+
+	  	  			// Se desfasa 2 posiciones mas para evitar leer en rebote de ir
+	  	  			 start=(RC5_trama>>14)&0x03;
+	  	  			 if(start==1){
+	  	  			 toggle=(RC5_trama>>13)&0x01;
+	  	  			 address=(RC5_trama>>8)&0x1F;
+	  	  			 command=(RC5_trama>>2)&0x3F;
+	  	  			 }
+	  	  			 printRC5();
+	  	  			RC5_state=false;
+	  				HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+	  	            HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+	  	            HAL_NVIC_EnableIRQ(EXTI3_IRQn);
+
+	  	  		}
 }
 /* USER CODE END 4 */
 

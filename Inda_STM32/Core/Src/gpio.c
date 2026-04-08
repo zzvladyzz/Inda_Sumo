@@ -83,17 +83,17 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : Right_Line_Pin Left_Line_Pin IR_38KHZ_Pin */
-  GPIO_InitStruct.Pin = Right_Line_Pin|Left_Line_Pin|IR_38KHZ_Pin;
+  /*Configure GPIO pins : Right_Line_Pin Back_Line_Pin IR_38KHZ_Pin */
+  GPIO_InitStruct.Pin = Right_Line_Pin|Back_Line_Pin|IR_38KHZ_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : Back_Line_Pin */
-  GPIO_InitStruct.Pin = Back_Line_Pin;
+  /*Configure GPIO pin : Left_Line_Pin */
+  GPIO_InitStruct.Pin = Left_Line_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(Back_Line_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(Left_Line_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI3_IRQn, 3, 0);
