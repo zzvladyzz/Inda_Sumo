@@ -57,12 +57,12 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define LED_OK_Pin GPIO_PIN_13
-#define LED_OK_GPIO_Port GPIOC
-#define LED_1_Pin GPIO_PIN_14
-#define LED_1_GPIO_Port GPIOC
-#define LED_2_Pin GPIO_PIN_15
+#define LED_2_Pin GPIO_PIN_13
 #define LED_2_GPIO_Port GPIOC
+#define LED_ALARMA_Pin GPIO_PIN_14
+#define LED_ALARMA_GPIO_Port GPIOC
+#define LED_OK_Pin GPIO_PIN_15
+#define LED_OK_GPIO_Port GPIOC
 #define IR_RR_Pin GPIO_PIN_0
 #define IR_RR_GPIO_Port GPIOA
 #define IR_RL_Pin GPIO_PIN_1
@@ -93,15 +93,18 @@ void Error_Handler(void);
 #define SERVO_GPIO_Port GPIOA
 #define Right_Line_Pin GPIO_PIN_3
 #define Right_Line_GPIO_Port GPIOB
+#define Right_Line_EXTI_IRQn EXTI3_IRQn
 #define Back_Line_Pin GPIO_PIN_4
 #define Back_Line_GPIO_Port GPIOB
+#define Back_Line_EXTI_IRQn EXTI4_IRQn
 #define Left_Line_Pin GPIO_PIN_5
 #define Left_Line_GPIO_Port GPIOB
+#define Left_Line_EXTI_IRQn EXTI9_5_IRQn
 #define IR_38KHZ_Pin GPIO_PIN_8
 #define IR_38KHZ_GPIO_Port GPIOB
 #define IR_38KHZ_EXTI_IRQn EXTI9_5_IRQn
-#define LED_ALARMA_Pin GPIO_PIN_9
-#define LED_ALARMA_GPIO_Port GPIOB
+#define LED_1_Pin GPIO_PIN_9
+#define LED_1_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

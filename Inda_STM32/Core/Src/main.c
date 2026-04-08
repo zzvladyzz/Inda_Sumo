@@ -33,7 +33,25 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+typedef enum{
+	preparado,
+	combate,
+	estrategia,
+	debug,
+	testIR,
+	testLinea,
+	stop
+}MenuZumo;
+typedef enum{
+	adelante,
+	atras
+}Direccion;
+typedef struct{
+	uint16_t PWM_Left;
+	uint16_t PWM_Right;
+	bool enable;
+	Direccion direccion;
+}Motores;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -49,6 +67,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+Motores motorZumo;
+MenuZumo menu;
 uint16_t adc_value[8];
 uint16_t array[15]={};
 
@@ -61,12 +81,19 @@ volatile uint16_t RC5_trama=0u;
 volatile uint8_t RC5_count=0u;
 volatile bool 	RC5_state=false;
 volatile uint16_t IR_38KHZ=0;
+
+uint8_t standby=0;
+
+char buffer[30];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-void motores(uint16_t MotorIzquierdo,uint16_t MotorDerecho);
+void motores(Motores *motor);
+void detener();
+void print();
+void printRC5();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -120,7 +147,12 @@ __HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_1,0);
 __HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_2,0);
 __HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_3,0);
 __HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_4,0);
-HAL_GPIO_WritePin(EN_MOTOR_GPIO_Port, EN_MOTOR_Pin, GPIO_PIN_RESET);
+motorZumo.PWM_Left=0;
+motorZumo.PWM_Right=0;
+motorZumo.enable=0;
+motorZumo.direccion=adelante;
+motores(&motorZumo);
+
 
   /* USER CODE END 2 */
 
@@ -128,94 +160,42 @@ HAL_GPIO_WritePin(EN_MOTOR_GPIO_Port, EN_MOTOR_Pin, GPIO_PIN_RESET);
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  char buffer[30];
-	  /*
-	  		sprintf(buffer,"LL= %u",adc_value[3]);
-	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
-	  		sprintf(buffer,"  LR=  %u",adc_value[2]);
-	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
-	  		sprintf(buffer,"  RL= %u",adc_value[1]);
-	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
-	  		sprintf(buffer," RR= %u \r\n",adc_value[0]);
-	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
-	  		*/
-	  		if(HAL_GPIO_ReadPin(Left_Line_GPIO_Port, Left_Line_Pin)==1){
-	  			//HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, 1);
-	  		}
-	  		else{
-	  			//HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, 0);
-	  		}
-	  		if(HAL_GPIO_ReadPin(Back_Line_GPIO_Port, Back_Line_Pin)==1){
-	  			  			//HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, 1);
-	  			  		}
-	  			  		else{
-	  			  			//HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, 0);
-	  			  		}
-	  		if(HAL_GPIO_ReadPin(Right_Line_GPIO_Port, Right_Line_Pin)==1){
-	  			  			//HAL_GPIO_WritePin(LED_OK_GPIO_Port, LED_OK_Pin, 1);
-	  			  		}
-	  			  		else{
-	  			  			//HAL_GPIO_WritePin(LED_OK_GPIO_Port, LED_OK_Pin, 0);
-	  			  		}
-	  		if(RC5_state==true)
-	  		{
 
-	  			// Se desfasa 2 posiciones mas para evitar leer en rebote de ir
-	  			 start=(RC5_trama>>14)&0x03;
-	  			 if(start==1){
-	  			 toggle=(RC5_trama>>13)&0x01;
-	  			 address=(RC5_trama>>8)&0x1F;
-	  			 command=(RC5_trama>>2)&0x3F;
-	  			 }
+	  if(RC5_state==true)
+	  	  		{
 
-	  			sprintf(buffer," start %u ",start);
-	  			HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
-	  			sprintf(buffer," toogle %u ",toggle);
-	  			HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
-	  			sprintf(buffer," address %u ",address);
-	  			HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+	  	  			// Se desfasa 2 posiciones mas para evitar leer en rebote de ir
+	  	  			 start=(RC5_trama>>14)&0x03;
+	  	  			 if(start==1){
+	  	  			 toggle=(RC5_trama>>13)&0x01;
+	  	  			 address=(RC5_trama>>8)&0x1F;
+	  	  			 command=(RC5_trama>>2)&0x3F;
+	  	  			 }
+	  	  			 printRC5();
+	  	  			RC5_state=false;
+	  				HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+	  	            HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+	  	            HAL_NVIC_EnableIRQ(EXTI3_IRQn);
 
-	  			sprintf(buffer," command %u ",command);
-	  			HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+	  	  		}
+	  	  		if(address==10 && command==9)
+	  	  		{
+	  	  			HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_RESET);
+	  	  			HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_SET);
+	  	  			start=0;
+	  	  			address=0;
+	  	  			command=0;
+	  	  		}
+	  	  		else if(address==0 && command==8)
+	  	  		{
+	  	  			HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_SET);
+	  	  			HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_RESET);
+	  	  			start=0;
+	  	  			address=0;
+	  	  			command=0;
+	  	  		}
 
-	  			sprintf(buffer," \r\n ");
-				HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
 
-				//HAL_Delay(1000);
-	  			RC5_state=false;
-				HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
-	  		}
-	  		if(address==10 && command==9)
-	  		{
-	  			HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_RESET);
-	  			HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_SET);
-	  			start=0;
-	  			address=0;
-	  			command=0;
-	  		}
-	  		else if(address==0 && command==8)
-	  		{
-	  			HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_SET);
-	  			HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_RESET);
-	  			start=0;
-	  			address=0;
-	  			command=0;
-	  		}
-
-/*
-	  		sprintf(buffer," Boton= %u ",adc_value[4]);
-	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
-
-	  		sprintf(buffer," A_ML= %u ",adc_value[5]);
-	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
-
-	  		sprintf(buffer," A_MR= %u ",adc_value[6]);
-	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
-
-	  		sprintf(buffer," voltage= %u \r\n",adc_value[7]);
-	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
-
-	  		HAL_Delay(1000);*/
 
     /* USER CODE END WHILE */
 
@@ -308,6 +288,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     {
         // 1. Bloqueamos el EXTI para que los cambios de bit no reinicien el Timer
             HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
+            HAL_NVIC_DisableIRQ(EXTI4_IRQn);
+            HAL_NVIC_DisableIRQ(EXTI3_IRQn);
+
 
             RC5_trama = 0;
             RC5_count = 0;
@@ -318,13 +301,131 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
             HAL_TIM_Base_Start_IT(&htim2);
 
     }
+    else if (GPIO_Pin == Left_Line_Pin) {
+    	HAL_GPIO_TogglePin(LED_1_GPIO_Port, LED_1_Pin);
+	}
+    else if (GPIO_Pin == Right_Line_Pin) {
+    	HAL_GPIO_TogglePin(LED_2_GPIO_Port, LED_2_Pin);
+    	}
+    else if (GPIO_Pin == Back_Line_Pin) {
+    	HAL_GPIO_TogglePin(LED_OK_GPIO_Port, LED_OK_Pin);
+    	}
+
 }
-void motores(uint16_t MotorIzquierdo,uint16_t MotorDerecho)
+void detener()
 {
-	__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_1,MotorDerecho);
-	__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_2,999);
-	__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_3,MotorIzquierdo);
-	__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_4,999);
+	HAL_GPIO_TogglePin(LED_ALARMA_GPIO_Port, LED_ALARMA_Pin);
+	motorZumo.PWM_Left=0;
+	motorZumo.PWM_Right=0;
+	motorZumo.enable=false;
+	motorZumo.direccion=adelante;
+	motores(&motorZumo);
+	start=0;
+	address=0;
+	command=0;
+	standby=0;
+	menu=stop;
+}
+void motores(Motores *motor)
+{
+	HAL_GPIO_WritePin(EN_MOTOR_GPIO_Port, EN_MOTOR_Pin, motor->enable);
+	motor->PWM_Left=((motor->PWM_Left)>999)?999:motor->PWM_Left;
+	motor->PWM_Left=((motor->PWM_Left)<0)?0:motor->PWM_Left;
+
+	motor->PWM_Right=((motor->PWM_Right)>999)?999:motor->PWM_Right;
+	motor->PWM_Right=((motor->PWM_Right)<0)?0:motor->PWM_Right;
+
+	uint16_t right=999-(motor->PWM_Right);
+	uint16_t left =999-(motor->PWM_Left);
+
+	if((motor->direccion)==adelante)
+	{
+		__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_1,right);
+		__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_2,999);
+		__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_3,999);
+		__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_4,left);
+	}
+	else if((motor->direccion)==atras){
+
+		__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_1,999);
+		__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_2,right);
+		__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_3,left);
+		__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_4,999);
+	}
+
+}
+void print()
+{
+
+		  /*
+		  		sprintf(buffer,"LL= %u",adc_value[3]);
+		  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
+		  		sprintf(buffer,"  LR=  %u",adc_value[2]);
+		  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
+		  		sprintf(buffer,"  RL= %u",adc_value[1]);
+		  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
+		  		sprintf(buffer," RR= %u \r\n",adc_value[0]);
+		  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
+		   */
+		  if(HAL_GPIO_ReadPin(Left_Line_GPIO_Port, Left_Line_Pin)==1){
+			  sprintf(buffer,"LL= %u",1);
+			  HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
+		  }
+		  else{
+			  sprintf(buffer," LL= %u",0);
+			  HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
+		  }
+		  if(HAL_GPIO_ReadPin(Back_Line_GPIO_Port, Back_Line_Pin)==1){
+			  sprintf(buffer," bL= %u",1);
+			  HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
+		  }
+		  else{
+			  sprintf(buffer," bL= %u",0);
+			  HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
+		  }
+		  if(HAL_GPIO_ReadPin(Right_Line_GPIO_Port, Right_Line_Pin)==1){
+			  sprintf(buffer," rL= %u",1);
+			  HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
+		  }
+		  else{
+			  sprintf(buffer," rL= %u",0);
+			  HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
+		  }
+		  sprintf(buffer,"\r\n");
+		  HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
+		  HAL_Delay(500);
+
+
+		  /*
+		  	  		sprintf(buffer," Boton= %u ",adc_value[4]);
+		  	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+
+		  	  		sprintf(buffer," A_ML= %u ",adc_value[5]);
+		  	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+
+		  	  		sprintf(buffer," A_MR= %u ",adc_value[6]);
+		  	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+
+		  	  		sprintf(buffer," voltage= %u \r\n",adc_value[7]);
+		  	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+
+		  	  		HAL_Delay(1000);*/
+}
+void printRC5()
+{
+		sprintf(buffer," start %u ",start);
+		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+		sprintf(buffer," toogle %u ",toggle);
+		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+		sprintf(buffer," address %u ",address);
+		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+
+		sprintf(buffer," command %u ",command);
+		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+
+		sprintf(buffer," \r\n ");
+	HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+
 }
 /* USER CODE END 4 */
 

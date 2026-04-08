@@ -51,26 +51,26 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, LED_OK_Pin|LED_1_Pin|LED_2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, LED_2_Pin|LED_ALARMA_Pin|LED_OK_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, Output_1_Pin|Output_2_Pin|Output_3_Pin|Output_4_Pin
-                          |LED_ALARMA_Pin, GPIO_PIN_RESET);
+                          |LED_1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, EN_MOTOR_Pin|SERVO_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : LED_OK_Pin LED_1_Pin LED_2_Pin */
-  GPIO_InitStruct.Pin = LED_OK_Pin|LED_1_Pin|LED_2_Pin;
+  /*Configure GPIO pins : LED_2_Pin LED_ALARMA_Pin LED_OK_Pin */
+  GPIO_InitStruct.Pin = LED_2_Pin|LED_ALARMA_Pin|LED_OK_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : Output_1_Pin Output_2_Pin Output_3_Pin Output_4_Pin
-                           LED_ALARMA_Pin */
+                           LED_1_Pin */
   GPIO_InitStruct.Pin = Output_1_Pin|Output_2_Pin|Output_3_Pin|Output_4_Pin
-                          |LED_ALARMA_Pin;
+                          |LED_1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -83,19 +83,25 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : Right_Line_Pin Back_Line_Pin Left_Line_Pin */
-  GPIO_InitStruct.Pin = Right_Line_Pin|Back_Line_Pin|Left_Line_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  /*Configure GPIO pins : Right_Line_Pin Left_Line_Pin IR_38KHZ_Pin */
+  GPIO_InitStruct.Pin = Right_Line_Pin|Left_Line_Pin|IR_38KHZ_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : IR_38KHZ_Pin */
-  GPIO_InitStruct.Pin = IR_38KHZ_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  /*Configure GPIO pin : Back_Line_Pin */
+  GPIO_InitStruct.Pin = Back_Line_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(IR_38KHZ_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(Back_Line_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI3_IRQn, 3, 0);
+  HAL_NVIC_EnableIRQ(EXTI3_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI4_IRQn, 3, 0);
+  HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+
   HAL_NVIC_SetPriority(EXTI9_5_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
