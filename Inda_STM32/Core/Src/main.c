@@ -59,12 +59,12 @@ typedef struct{
 #define convVolt 0.000825396  //3.38/4095
 #define divisorRes  0.259259		//r1=100k r2 35k
 
-#define LL_sharp sharp[3]
-#define LR_sharp sharp[2]
-#define RL_sharp sharp[1]
-#define RR_sharp sharp[0]
-#define filtroShift 3
-#define UmbralRuido 20
+#define LL_sharp valorfinalestable[3]
+#define LR_sharp valorfinalestable[2]
+#define RL_sharp valorfinalestable[1]
+#define RR_sharp valorfinalestable[0]
+#define filtroShift 1
+#define UmbralRuido 10
 
 /* USER CODE END PD */
 
@@ -108,7 +108,9 @@ uint32_t tiempoAnterior=0u;
 uint32_t tiempoAnteriorVoltaje=0u;
 uint32_t tiempoMenu=0u;
 
-uint32_t valorfiltrado=0u;
+int32_t valorfiltrado[4]={2048u,2048u,2048u,2048u};
+int32_t valorfinalestable[4]={2048u,2048u,2048u,2048u};
+
 
 char buffer[30];
 /* USER CODE END PV */
@@ -121,7 +123,7 @@ void detener();
 void printADC();
 void printADC_IR();
 void printADC_Volt_Amp();
-
+void printFiltroIR();
 void printRC5();
 void RC5_recepcion();
 void conversionADC();
@@ -204,13 +206,13 @@ HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, 0);
 	  	  RC5_recepcion();	//Aca se reciben datos y se obtiene address y command
 
 	  	  tiempo=HAL_GetTick();
-	  	  if((tiempo-tiempoAnterior)>10)
+	  	  if((tiempo-tiempoAnterior)>7)
 	  	  {
 	  	  conversionADC();
 	  	  tiempoAnterior=tiempo;
 	  	  }
 	  	tiempo=HAL_GetTick();
-	  	  if(tiempo-tiempoAnteriorVoltaje>100)
+	  	  if(tiempo-tiempoAnteriorVoltaje>521)
 	  	  {
 	  		  if(voltaje<6.6)
 	  		  {
@@ -223,7 +225,7 @@ HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, 0);
 	  	  //printADC_Volt_Amp();
 	  	  //printADC();
 tiempo=HAL_GetTick();
-if((tiempo-tiempoMenu)>15)
+if((tiempo-tiempoMenu)>20)
 {
 	tiempoMenu=tiempo;
 
@@ -233,7 +235,7 @@ if((tiempo-tiempoMenu)>15)
 	  		  if(seleccionEstrategia==0)
 	  		  {
 
-	  			  if( LR_sharp < 30 || RL_sharp<30)
+	  			  if( LR_sharp > 1600 || RL_sharp>1600)
 	  			  {
 	  				  motorZumo.PWM_Left=500;
 	  				  motorZumo.PWM_Right=500;
@@ -248,7 +250,6 @@ if((tiempo-tiempoMenu)>15)
 	  		  }
 	  			  //printADC_IR();}
 	  		  motores(&motorZumo);
-
 	  	  }
 }
 
@@ -515,7 +516,7 @@ void conversionADC()
 	corrienteMR=corrienteMR-1.65;
 	corrienteMR=corrienteMR/0.66;
 	// Valores IR en cm  d=65.302-27.77*V
-
+/*
 	sharp[3]=adc_value[3]*convVolt;
 	sharp[2]=adc_value[2]*convVolt;
 	sharp[1]=adc_value[1]*convVolt;
@@ -525,6 +526,32 @@ void conversionADC()
 	sharp[2]=65.302-sharp[2]*27.77;
 	sharp[1]=65.302-sharp[1]*27.77;
 	sharp[0]=65.302-sharp[0]*27.77;
+*/
+	for(int8_t x=0;x<4;x++)
+	{
+	valorfiltrado[x]=valorfiltrado[x]+((adc_value[x]-valorfiltrado[x])>>filtroShift);
+
+	}
+	for(int8_t x=0;x<4;x++)
+	{
+		int32_t sumaABS=valorfiltrado[x] - valorfinalestable[x];
+		if(sumaABS>=0)
+		{
+			if(sumaABS>UmbralRuido)
+			{
+				valorfinalestable[x] = valorfiltrado[x];
+			}
+		}
+		else if(sumaABS<0)
+				{
+					sumaABS=-sumaABS;
+					if(sumaABS>UmbralRuido)
+					{
+						valorfinalestable[x] = valorfiltrado[x];
+					}
+				}
+
+	}
 
 	//validar pulso adc 4
 	if(menu!=combate)
@@ -567,6 +594,24 @@ void conversionADC()
 
 	HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, (seleccionEstrategia)&1);
 
+}
+void printFiltroIR()
+{
+	sprintf(buffer,"LL= %lu",valorfinalestable[3]);
+			HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+
+			sprintf(buffer,"  LR=  %lu",valorfinalestable[2]);
+			HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+
+			sprintf(buffer,"  RL= %lu",valorfinalestable[1]);
+			HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+
+			sprintf(buffer," RR= %lu",valorfinalestable[0]);
+			HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+
+			sprintf(buffer,"\r\n");
+			HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+			HAL_Delay(500);
 }
 void printRC5()
 {
