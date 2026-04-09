@@ -92,7 +92,7 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void motores(Motores *motor);
 void detener();
-void print();
+void printADC();
 void printRC5();
 void RC5_recepcion();
 /* USER CODE END PFP */
@@ -139,6 +139,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
 HAL_ADC_Start_DMA(&hadc1, (uint32_t *)adc_value, 8);
+
 HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
 HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
 HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
@@ -148,6 +149,7 @@ __HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_1,0);
 __HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_2,0);
 __HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_3,0);
 __HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_4,0);
+
 motorZumo.PWM_Left=0;
 motorZumo.PWM_Right=0;
 motorZumo.enable=0;
@@ -163,35 +165,7 @@ motores(&motorZumo);
   {
 	  	  RC5_recepcion();	//Aca se reciben datos y se obtiene address y command
 
-	  	  if(address==0x1F && command==0x3F)
-	  	  {
-	  		  detener();
-	  		  start=0;
-	  		  address=0;
-	  		  command=0;
-	  	  }
-	  	  		if(address==1 && command==9)
-	  	  		{
-	  	  			standby++;
-	  	  			if(standby==1)
-	  	  			{
-	  	  				menu=preparado;
-	  	  				HAL_GPIO_WritePin(LED_OK_GPIO_Port, LED_OK_Pin, GPIO_PIN_SET);
 
-	  	  			}
-	  	  			else if(standby ==2)
-	  	  			{
-	  	  				menu=combate;
-	  	  			motorZumo.PWM_Left=200;
-	  	  							motorZumo.PWM_Right=200;
-	  	  							motorZumo.direccion=adelante;
-	  	  			HAL_GPIO_WritePin(LED_OK_GPIO_Port, LED_OK_Pin, GPIO_PIN_RESET);
-	  	  			standby=0;
-	  	  			}
-	  	  			start=0;
-	  	  			address=0;
-	  	  			command=0;
-	  	  		}
 	 switch (menu) {
 		case combate:
 
@@ -341,6 +315,10 @@ void detener()
 	standby=0;
 	menu=stop;
 }
+/*
+ * funciona para activar motores
+ * se debe revisar si se cambia por otros motores
+ */
 void motores(Motores *motor)
 {
 	HAL_GPIO_WritePin(EN_MOTOR_GPIO_Port, EN_MOTOR_Pin, motor->enable);
@@ -369,62 +347,37 @@ void motores(Motores *motor)
 	}
 
 }
-void print()
+void printADC()
 {
 
-		  /*
-		  		sprintf(buffer,"LL= %u",adc_value[3]);
-		  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
-		  		sprintf(buffer,"  LR=  %u",adc_value[2]);
-		  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
-		  		sprintf(buffer,"  RL= %u",adc_value[1]);
-		  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
-		  		sprintf(buffer," RR= %u \r\n",adc_value[0]);
-		  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
-		   */
-		  if(HAL_GPIO_ReadPin(Left_Line_GPIO_Port, Left_Line_Pin)==1){
-			  sprintf(buffer,"LL= %u",1);
-			  HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
-		  }
-		  else{
-			  sprintf(buffer," LL= %u",0);
-			  HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
-		  }
-		  if(HAL_GPIO_ReadPin(Back_Line_GPIO_Port, Back_Line_Pin)==1){
-			  sprintf(buffer," bL= %u",1);
-			  HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
-		  }
-		  else{
-			  sprintf(buffer," bL= %u",0);
-			  HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
-		  }
-		  if(HAL_GPIO_ReadPin(Right_Line_GPIO_Port, Right_Line_Pin)==1){
-			  sprintf(buffer," rL= %u",1);
-			  HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
-		  }
-		  else{
-			  sprintf(buffer," rL= %u",0);
-			  HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
-		  }
-		  sprintf(buffer,"\r\n");
-		  HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 1);
-		  HAL_Delay(500);
+	sprintf(buffer," Boton= %u ",adc_value[4]);
+	HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+
+	sprintf(buffer," A_ML= %u ",adc_value[5]);
+	HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+
+	sprintf(buffer," A_MR= %u ",adc_value[6]);
+	HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+
+	sprintf(buffer," voltage= %u",adc_value[7]);
+	HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+
+	sprintf(buffer,"LL= %u",adc_value[3]);
+	HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+
+	sprintf(buffer,"  LR=  %u",adc_value[2]);
+	HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+
+	sprintf(buffer,"  RL= %u",adc_value[1]);
+	HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+
+	sprintf(buffer," RR= %u",adc_value[0]);
+	HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+
+	sprintf(buffer,"\r\n");
+	HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
 
 
-		  /*
-		  	  		sprintf(buffer," Boton= %u ",adc_value[4]);
-		  	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
-
-		  	  		sprintf(buffer," A_ML= %u ",adc_value[5]);
-		  	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
-
-		  	  		sprintf(buffer," A_MR= %u ",adc_value[6]);
-		  	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
-
-		  	  		sprintf(buffer," voltage= %u \r\n",adc_value[7]);
-		  	  		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
-
-		  	  		HAL_Delay(1000);*/
 }
 void printRC5()
 {
@@ -442,25 +395,59 @@ void printRC5()
 	HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
 
 }
+/*
+ * Codigo importante para la recepcion
+ * se recibe 2 bit mas para evitar una segunda pulsacion rapida
+ *
+ */
 void RC5_recepcion()
 {
-	  if(RC5_state==true)
-	  	  		{
+	if(RC5_state==true)
+	{
 
-	  	  			// Se desfasa 2 posiciones mas para evitar leer en rebote de ir
-	  	  			 start=(RC5_trama>>14)&0x03;
-	  	  			 if(start==1){
-	  	  			 toggle=(RC5_trama>>13)&0x01;
-	  	  			 address=(RC5_trama>>8)&0x1F;
-	  	  			 command=(RC5_trama>>2)&0x3F;
-	  	  			 }
-	  	  			 printRC5();
-	  	  			RC5_state=false;
-	  				HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
-	  	            HAL_NVIC_EnableIRQ(EXTI4_IRQn);
-	  	            HAL_NVIC_EnableIRQ(EXTI3_IRQn);
+		// Se desfasa 2 posiciones mas para evitar leer en rebote de ir
+		start=(RC5_trama>>14)&0x03;
+		if(start==1){
+			toggle=(RC5_trama>>13)&0x01;
+			address=(RC5_trama>>8)&0x1F;
+			command=(RC5_trama>>2)&0x3F;
+		}
+		printRC5();
+		RC5_state=false;
+		HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+		HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+		HAL_NVIC_EnableIRQ(EXTI3_IRQn);
 
-	  	  		}
+	}
+	// Se para todo y se deberia inicializar los valores a 0
+	if(address==0x1F && command==0x3F)
+	{
+		detener();
+	}
+	// comando para entrar en standby y iniciar robot
+
+	if(address==1 && command==9)
+	{
+		standby++;
+		if(standby==1)
+		{
+			menu=preparado;
+			HAL_GPIO_WritePin(LED_OK_GPIO_Port, LED_OK_Pin, GPIO_PIN_SET);
+
+		}
+		else if(standby ==2)
+		{
+			menu=combate;
+			motorZumo.PWM_Left=200;
+			motorZumo.PWM_Right=200;
+			motorZumo.direccion=adelante;
+			HAL_GPIO_WritePin(LED_OK_GPIO_Port, LED_OK_Pin, GPIO_PIN_RESET);
+			standby=1 ;
+		}
+		start=0;
+		address=0;
+		command=0;
+	}
 }
 /* USER CODE END 4 */
 
