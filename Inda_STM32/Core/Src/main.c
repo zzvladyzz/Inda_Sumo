@@ -107,10 +107,15 @@ uint32_t tiempo=0u;
 uint32_t tiempoAnterior=0u;
 uint32_t tiempoAnteriorVoltaje=0u;
 uint32_t tiempoMenu=0u;
+uint32_t tiempoGiro=0u;
+
 
 int32_t valorfiltrado[4]={2048u,2048u,2048u,2048u};
 int32_t valorfinalestable[4]={2048u,2048u,2048u,2048u};
 
+bool lineaTotal=false;
+bool lineaIzquierda=false;
+bool lineaDerecha=false;
 
 char buffer[30];
 /* USER CODE END PV */
@@ -237,8 +242,8 @@ if((tiempo-tiempoMenu)>20)
 
 	  			  if( LR_sharp > 1600 || RL_sharp>1600)
 	  			  {
-	  				  motorZumo.PWM_Left=500;
-	  				  motorZumo.PWM_Right=500;
+	  				  motorZumo.PWM_Left=600;
+	  				  motorZumo.PWM_Right=600;
 
 	  			  }
 	  			  else
@@ -248,7 +253,42 @@ if((tiempo-tiempoMenu)>20)
 
 	  			  }
 	  		  }
-	  			  //printADC_IR();}
+	  		  // ir a linea iquierda en contrarla y buscar enemigo por derecha
+	  		  if(seleccionEstrategia==1)
+	  		  {
+
+	  			  if( LR_sharp > 1600 || RL_sharp>1600)
+	  			  {
+	  				  motorZumo.PWM_Left=600;
+	  				  motorZumo.PWM_Right=600;
+	  				  lineaDerecha=false;
+	  				  lineaIzquierda=false;
+
+	  			  }
+	  			  if(lineaIzquierda==true && lineaDerecha==false)
+	  			  {
+
+	  				  motorZumo.PWM_Left=200;
+	  				  motorZumo.PWM_Right=-200;
+	  			  }
+	  			  else if(lineaIzquierda==false && lineaDerecha==true)
+	  			  {
+
+	  				  motorZumo.PWM_Left=-200;
+	  				  motorZumo.PWM_Right=200;
+	  			  }
+	  			  else{
+
+	  					  motorZumo.PWM_Left=400;
+	  					  motorZumo.PWM_Right=400;
+
+	  			  }
+
+	  		  }
+
+
+
+
 	  		  motores(&motorZumo);
 	  	  }
 }
@@ -313,21 +353,6 @@ void SystemClock_Config(void)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     if (htim->Instance == TIM2) {
 
-    	/*Codigo pruebas
-		array[RC5_count]=HAL_GPIO_ReadPin(IR_38KHZ_GPIO_Port, IR_38KHZ_Pin);
-    	HAL_GPIO_TogglePin(SERVO_GPIO_Port, SERVO_Pin);
-
-    	for (uint8_t var = 0; var < 15; ++var) {
-    		sprintf(buffer," - %u",array[var]);
-    		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
-    	}
-    	sprintf(buffer," \r\n ");
-    	HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
-    	HAL_Delay(1000);
-    	HAL_GPIO_WritePin(LED_OK_GPIO_Port, LED_OK_Pin, 1);
-    	HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
-    	*/
-
     	uint8_t RC5_bit=(HAL_GPIO_ReadPin(IR_38KHZ_GPIO_Port, IR_38KHZ_Pin)==GPIO_PIN_SET)?1:0;
     	RC5_trama=(RC5_trama<<1)|RC5_bit;
     	RC5_count++;
@@ -361,11 +386,35 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     }
     else if (GPIO_Pin == Left_Line_Pin) {
 
+    	if(seleccionEstrategia==1 )
+    	{
+    		if(HAL_GPIO_ReadPin(Right_Line_GPIO_Port, Right_Line_Pin)==0)lineaTotal=true;
+    		lineaIzquierda=true;
+    		lineaDerecha=false;
+
+    		motorZumo.PWM_Left=0;
+    		motorZumo.PWM_Right=0;
+    		    		motores(&motorZumo);
+    	}
+    	else{
     	detener();
+    	}
 	}
     else if (GPIO_Pin == Right_Line_Pin) {
-detener();
-    	}
+    	if(seleccionEstrategia==1 )
+    	    	{
+    		if(HAL_GPIO_ReadPin(Left_Line_GPIO_Port, Left_Line_Pin)==0)lineaTotal=true;
+    		lineaIzquierda=false;
+    		    		lineaDerecha=true;
+
+    	    		motorZumo.PWM_Left=0;
+    	    		motorZumo.PWM_Right=0;
+    	    		    		motores(&motorZumo);
+    	    	}
+    	    	else{
+    	    	detener();
+    	    	}
+    }
     else if (GPIO_Pin == Back_Line_Pin) {
     	detener();
     	}
@@ -384,6 +433,10 @@ void detener()
 	command=0;
 	standby=0;
 	menu=stop;
+	lineaIzquierda=false;
+	lineaDerecha=false;
+	lineaTotal=false;
+
 }
 /*
  * funciona para activar motores
