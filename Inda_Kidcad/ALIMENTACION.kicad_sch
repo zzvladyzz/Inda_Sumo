@@ -2316,7 +2316,7 @@
 			(uuid "462e82b2-8366-4b28-8f7d-1a0c2bb8b90f")
 		)
 		(instances
-			(project "Karane_Sumo_V2"
+			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/b022e595-33bd-440b-84f6-8dfa037dfa4f"
 					(reference "C26")
 					(unit 1)
@@ -2396,7 +2396,7 @@
 			(uuid "681e8f8f-1baf-4aa7-8fcc-ca26cfc047ca")
 		)
 		(instances
-			(project "Karane_Sumo_V2"
+			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/b022e595-33bd-440b-84f6-8dfa037dfa4f"
 					(reference "L5")
 					(unit 1)
@@ -2475,7 +2475,7 @@
 			(uuid "12c0f8f4-e81a-4695-8e01-907f57fdbd6c")
 		)
 		(instances
-			(project "Karane_Sumo_V2"
+			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/b022e595-33bd-440b-84f6-8dfa037dfa4f"
 					(reference "#FLG02")
 					(unit 1)
@@ -2557,7 +2557,7 @@
 			(uuid "3061a997-2cfc-4aef-ad57-2065e9c7adf1")
 		)
 		(instances
-			(project "Karane_Sumo_V2"
+			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/b022e595-33bd-440b-84f6-8dfa037dfa4f"
 					(reference "C28")
 					(unit 1)
@@ -2639,7 +2639,7 @@
 			(uuid "e784d7de-330d-455d-a731-0efca6355579")
 		)
 		(instances
-			(project "Karane_Sumo_V2"
+			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/b022e595-33bd-440b-84f6-8dfa037dfa4f"
 					(reference "C30")
 					(unit 1)
@@ -2717,7 +2717,7 @@
 			(uuid "2d0cac90-1042-43b5-946c-252f6ec84de8")
 		)
 		(instances
-			(project "Karane_Sumo_V2"
+			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/b022e595-33bd-440b-84f6-8dfa037dfa4f"
 					(reference "#PWR048")
 					(unit 1)
@@ -2797,7 +2797,7 @@
 			(uuid "7963cd63-61a5-418a-b158-a2897783ee07")
 		)
 		(instances
-			(project "Karane_Sumo_V2"
+			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/b022e595-33bd-440b-84f6-8dfa037dfa4f"
 					(reference "R21")
 					(unit 1)
@@ -2879,7 +2879,7 @@
 			(uuid "2a6642c9-1776-4cc1-8b7e-66a023728414")
 		)
 		(instances
-			(project "Karane_Sumo_V2"
+			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/b022e595-33bd-440b-84f6-8dfa037dfa4f"
 					(reference "C27")
 					(unit 1)
@@ -2957,7 +2957,7 @@
 			(uuid "18f44ea5-786c-4f9c-97b4-299f4faec5f1")
 		)
 		(instances
-			(project "Karane_Sumo_V2"
+			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/b022e595-33bd-440b-84f6-8dfa037dfa4f"
 					(reference "#PWR047")
 					(unit 1)
@@ -3035,7 +3035,7 @@
 			(uuid "93707f08-00d2-422f-8a14-41671f2fbc85")
 		)
 		(instances
-			(project "Karane_Sumo_V2"
+			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/b022e595-33bd-440b-84f6-8dfa037dfa4f"
 					(reference "#PWR040")
 					(unit 1)
@@ -3118,7 +3118,7 @@
 			(uuid "8603010f-dd6b-4033-8fc0-4b1885eb2a7c")
 		)
 		(instances
-			(project "Karane_Sumo_V2"
+			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/b022e595-33bd-440b-84f6-8dfa037dfa4f"
 					(reference "U7")
 					(unit 1)
@@ -3196,7 +3196,7 @@
 			(uuid "7425ea43-66fe-4830-b1c4-a6416b367811")
 		)
 		(instances
-			(project "Karane_Sumo_V2"
+			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/b022e595-33bd-440b-84f6-8dfa037dfa4f"
 					(reference "#PWR042")
 					(unit 1)
@@ -3274,7 +3274,7 @@
 			(uuid "5e8f660a-d9b4-456a-b37c-38c19017a60d")
 		)
 		(instances
-			(project "Karane_Sumo_V2"
+			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/b022e595-33bd-440b-84f6-8dfa037dfa4f"
 					(reference "#PWR049")
 					(unit 1)
@@ -3356,7 +3356,7 @@
 			(uuid "c472426f-190f-4ee8-af47-fcf36236fe2c")
 		)
 		(instances
-			(project "Karane_Sumo_V2"
+			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/b022e595-33bd-440b-84f6-8dfa037dfa4f"
 					(reference "C29")
 					(unit 1)
@@ -3434,7 +3434,7 @@
 			(uuid "a97eb31f-d306-4672-914b-660eb71cbd24")
 		)
 		(instances
-			(project "Karane_Sumo_V2"
+			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/b022e595-33bd-440b-84f6-8dfa037dfa4f"
 					(reference "#FLG03")
 					(unit 1)
@@ -3516,7 +3516,7 @@
 			(uuid "ba25e5f7-1bd0-45c3-aade-2ebd1e6c1ea3")
 		)
 		(instances
-			(project "Karane_Sumo_V2"
+			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/b022e595-33bd-440b-84f6-8dfa037dfa4f"
 					(reference "C25")
 					(unit 1)
@@ -3594,7 +3594,7 @@
 			(uuid "a5e26113-1865-4445-ae6d-7c64897cc7e3")
 		)
 		(instances
-			(project "Karane_Sumo_V2"
+			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/b022e595-33bd-440b-84f6-8dfa037dfa4f"
 					(reference "#PWR045")
 					(unit 1)
@@ -3676,7 +3676,7 @@
 			(uuid "5a49123e-801a-41ef-8ef2-eea230247f02")
 		)
 		(instances
-			(project "Karane_Sumo_V2"
+			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/b022e595-33bd-440b-84f6-8dfa037dfa4f"
 					(reference "R23")
 					(unit 1)
@@ -3758,7 +3758,7 @@
 			(uuid "d6ba3112-8600-4550-8e27-ffb1da41ed27")
 		)
 		(instances
-			(project "Karane_Sumo_V2"
+			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/b022e595-33bd-440b-84f6-8dfa037dfa4f"
 					(reference "R22")
 					(unit 1)
@@ -3836,7 +3836,7 @@
 			(uuid "bd7fc233-b861-4348-be29-ad3b0a6f5dfd")
 		)
 		(instances
-			(project "Karane_Sumo_V2"
+			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/b022e595-33bd-440b-84f6-8dfa037dfa4f"
 					(reference "#PWR043")
 					(unit 1)
@@ -3914,7 +3914,7 @@
 			(uuid "9f9672a6-3217-492f-9c3f-8b92551cf8dc")
 		)
 		(instances
-			(project "Karane_Sumo_V2"
+			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/b022e595-33bd-440b-84f6-8dfa037dfa4f"
 					(reference "#PWR044")
 					(unit 1)
@@ -3992,7 +3992,7 @@
 			(uuid "9ede7cec-72b0-4d2f-bd80-a2de742cf3b8")
 		)
 		(instances
-			(project "Karane_Sumo_V2"
+			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/b022e595-33bd-440b-84f6-8dfa037dfa4f"
 					(reference "#PWR041")
 					(unit 1)
@@ -4074,7 +4074,7 @@
 			(uuid "c1220997-7e62-4402-a19d-48f443c911f3")
 		)
 		(instances
-			(project "Karane_Sumo_V2"
+			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/b022e595-33bd-440b-84f6-8dfa037dfa4f"
 					(reference "C31")
 					(unit 1)
@@ -4152,7 +4152,7 @@
 			(uuid "e063168c-db4e-43b7-9a40-146772aa3dfd")
 		)
 		(instances
-			(project "Karane_Sumo_V2"
+			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/b022e595-33bd-440b-84f6-8dfa037dfa4f"
 					(reference "#FLG01")
 					(unit 1)
@@ -4232,7 +4232,7 @@
 			(uuid "ab1745ea-6eb5-4993-8ef2-bf7b1665936a")
 		)
 		(instances
-			(project "Karane_Sumo_V2"
+			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/b022e595-33bd-440b-84f6-8dfa037dfa4f"
 					(reference "C24")
 					(unit 1)
@@ -4310,7 +4310,7 @@
 			(uuid "e614db15-615a-4f36-9e5d-05908f7cf97e")
 		)
 		(instances
-			(project "Karane_Sumo_V2"
+			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/b022e595-33bd-440b-84f6-8dfa037dfa4f"
 					(reference "#PWR046")
 					(unit 1)
@@ -4392,7 +4392,7 @@
 			(uuid "3d040db0-1e93-4320-9c04-b81314ee9e50")
 		)
 		(instances
-			(project "Karane_Sumo_V2"
+			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/b022e595-33bd-440b-84f6-8dfa037dfa4f"
 					(reference "C32")
 					(unit 1)
@@ -4493,7 +4493,7 @@
 			(uuid "835919a1-fe55-48f0-87fd-c2253dc8a0d8")
 		)
 		(instances
-			(project "Karane_Sumo_V2"
+			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/b022e595-33bd-440b-84f6-8dfa037dfa4f"
 					(reference "U6")
 					(unit 1)
