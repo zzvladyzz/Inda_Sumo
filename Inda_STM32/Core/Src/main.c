@@ -116,7 +116,7 @@ int32_t valorfinalestable[4]={2048u,2048u,2048u,2048u};
 bool lineaTotal=false;
 bool lineaIzquierda=false;
 bool lineaDerecha=false;
-
+bool bloqueado=false;
 char buffer[30];
 /* USER CODE END PV */
 
@@ -263,15 +263,17 @@ if((tiempo-tiempoMenu)>20)
 	  				  motorZumo.PWM_Right=600;
 	  				  lineaDerecha=false;
 	  				  lineaIzquierda=false;
+	  				  lineaTotal=false;
+	  				bloqueado=false;
 
 	  			  }
-	  			  if(lineaIzquierda==true && lineaDerecha==false)
+	  			  if(lineaIzquierda==true && lineaDerecha==false	&& lineaTotal==false)
 	  			  {
 
 	  				  motorZumo.PWM_Left=200;
 	  				  motorZumo.PWM_Right=-200;
 	  			  }
-	  			  else if(lineaIzquierda==false && lineaDerecha==true)
+	  			  else if(lineaIzquierda==false && lineaDerecha==true && lineaTotal==false)
 	  			  {
 
 	  				  motorZumo.PWM_Left=-200;
@@ -279,8 +281,27 @@ if((tiempo-tiempoMenu)>20)
 	  			  }
 	  			  else{
 
+	  				  if (lineaTotal==true) {
+	  					  if(bloqueado==false)
+	  					  {
+	  						  tiempoGiro=HAL_GetTick();
+	  						  bloqueado=true;
+	  						  motorZumo.PWM_Left=-200;
+	  						  motorZumo.PWM_Right=200;
+	  					  }
+	  					  else{
+	  						  tiempo=HAL_GetTick();
+	  						  if((tiempo-tiempoGiro)>500)
+	  						  {
+	  							  lineaTotal=false;
+	  							  bloqueado=false;
+	  						  }
+	  					  }
+	  				  }
+	  				  else{
 	  					  motorZumo.PWM_Left=400;
 	  					  motorZumo.PWM_Right=400;
+	  				  }
 
 	  			  }
 
@@ -436,6 +457,7 @@ void detener()
 	lineaIzquierda=false;
 	lineaDerecha=false;
 	lineaTotal=false;
+	bloqueado=false;
 
 }
 /*
