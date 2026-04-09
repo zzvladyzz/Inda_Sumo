@@ -47,8 +47,8 @@ typedef enum{
 	atras
 }Direccion;
 typedef struct{
-	uint16_t PWM_Left;
-	uint16_t PWM_Right;
+	int16_t PWM_Left;
+	int16_t PWM_Right;
 	bool enable;
 	Direccion direccion;
 }Motores;
@@ -58,6 +58,13 @@ typedef struct{
 /* USER CODE BEGIN PD */
 #define convVolt 0.000825396  //3.38/4095
 #define divisorRes  0.259259		//r1=100k r2 35k
+
+#define LL_sharp sharp[3]
+#define LR_sharp sharp[2]
+#define RL_sharp sharp[1]
+#define RR_sharp sharp[0]
+#define filtroShift 3
+#define UmbralRuido 20
 
 /* USER CODE END PD */
 
@@ -96,6 +103,12 @@ float sharp[4]={};
 bool pulsoConstante=false;
 int8_t seleccionEstrategia=0;
 
+uint32_t tiempo=0u;
+uint32_t tiempoAnterior=0u;
+uint32_t tiempoAnteriorVoltaje=0u;
+uint32_t tiempoMenu=0u;
+
+uint32_t valorfiltrado=0u;
 
 char buffer[30];
 /* USER CODE END PV */
@@ -112,6 +125,7 @@ void printADC_Volt_Amp();
 void printRC5();
 void RC5_recepcion();
 void conversionADC();
+void filtroSharp();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -173,6 +187,13 @@ motorZumo.enable=0;
 motorZumo.direccion=adelante;
 motores(&motorZumo);
 
+HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, 1);
+HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, 1);
+
+HAL_Delay(1000);
+HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, 0);
+HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, 0);
+
 
   /* USER CODE END 2 */
 
@@ -182,20 +203,54 @@ motores(&motorZumo);
   {
 	  	  RC5_recepcion();	//Aca se reciben datos y se obtiene address y command
 
+	  	  tiempo=HAL_GetTick();
+	  	  if((tiempo-tiempoAnterior)>10)
+	  	  {
 	  	  conversionADC();
+	  	  tiempoAnterior=tiempo;
+	  	  }
+	  	tiempo=HAL_GetTick();
+	  	  if(tiempo-tiempoAnteriorVoltaje>100)
+	  	  {
+	  		  if(voltaje<6.6)
+	  		  {
+	  			  HAL_GPIO_TogglePin(LED_ALARMA_GPIO_Port, LED_ALARMA_Pin);
+	  			  detener();
+	  		  }
+	  		  tiempoAnteriorVoltaje=tiempo;
+	  	  }
 	  	  //printADC_IR();
 	  	  //printADC_Volt_Amp();
 	  	  //printADC();
+tiempo=HAL_GetTick();
+if((tiempo-tiempoMenu)>15)
+{
+	tiempoMenu=tiempo;
 
-	 switch (menu) {
-		case combate:
+	  	  if (menu==combate) {
+	  		  motorZumo.enable=true;
 
-				motorZumo.enable=true;
-				motores(&motorZumo);
-			break;
-		default:
-			break;
-	}
+	  		  if(seleccionEstrategia==0)
+	  		  {
+
+	  			  if( LR_sharp < 30 || RL_sharp<30)
+	  			  {
+	  				  motorZumo.PWM_Left=500;
+	  				  motorZumo.PWM_Right=500;
+
+	  			  }
+	  			  else
+	  			  {
+	  				  motorZumo.PWM_Left=200;
+	  				  motorZumo.PWM_Right=-200;
+
+	  			  }
+	  		  }
+	  			  //printADC_IR();}
+	  		  motores(&motorZumo);
+
+	  	  }
+}
 
 
 
@@ -304,20 +359,14 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 
     }
     else if (GPIO_Pin == Left_Line_Pin) {
-    	motorZumo.PWM_Left=200;
-    	motorZumo.PWM_Right=200;
-    	motorZumo.direccion=atras;
 
+    	detener();
 	}
     else if (GPIO_Pin == Right_Line_Pin) {
-    	motorZumo.PWM_Left=200;
-    	    	motorZumo.PWM_Right=200;
-    	    	motorZumo.direccion=atras;
+detener();
     	}
     else if (GPIO_Pin == Back_Line_Pin) {
-    	motorZumo.PWM_Left=200;
-    	    	    	motorZumo.PWM_Right=200;
-    	    	    	motorZumo.direccion=adelante;
+    	detener();
     	}
 
 }
@@ -341,30 +390,46 @@ void detener()
  */
 void motores(Motores *motor)
 {
-	HAL_GPIO_WritePin(EN_MOTOR_GPIO_Port, EN_MOTOR_Pin, motor->enable);
-	motor->PWM_Left=((motor->PWM_Left)>999)?999:motor->PWM_Left;
-	motor->PWM_Left=((motor->PWM_Left)<0)?0:motor->PWM_Left;
 
-	motor->PWM_Right=((motor->PWM_Right)>999)?999:motor->PWM_Right;
-	motor->PWM_Right=((motor->PWM_Right)<0)?0:motor->PWM_Right;
-
-	uint16_t right=999-(motor->PWM_Right);
-	uint16_t left =999-(motor->PWM_Left);
-
-	if((motor->direccion)==atras)
+	int16_t right=0;
+	if((motor->PWM_Right)>=0)
 	{
-		__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_1,right);
-		__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_2,999);
-		__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_3,left);
-		__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_4,999);
-	}
-	else if((motor->direccion)==adelante){
+		motor->PWM_Right=((motor->PWM_Right)>999)?999:motor->PWM_Right;
 
+		right=999-(motor->PWM_Right);
 		__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_1,999);
 		__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_2,right);
-		__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_3,999);
-		__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_4,left);
 	}
+	else if((motor->PWM_Right)<0)
+	{
+		motor->PWM_Right=-1*(motor->PWM_Right);
+		motor->PWM_Right=((motor->PWM_Right)>999)?999:motor->PWM_Right;
+
+		right=999-(motor->PWM_Right);
+		__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_1,right);
+		__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_2,999);
+	}
+
+	int16_t left=0;
+	if((motor->PWM_Left)>=0)
+		{
+		motor->PWM_Left=((motor->PWM_Left)>999)?999:motor->PWM_Left;
+			left=999-(motor->PWM_Left);
+			__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_3,999);
+			__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_4,left);
+		}
+		else if((motor->PWM_Left)<0)
+		{
+			motor->PWM_Left=-(motor->PWM_Left);
+			motor->PWM_Left=((motor->PWM_Left)>999)?999:motor->PWM_Left;
+
+			left=999-(motor->PWM_Left);
+			__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_3,left);
+			__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_4,999);
+		}
+
+	HAL_GPIO_WritePin(EN_MOTOR_GPIO_Port, EN_MOTOR_Pin, motor->enable);
+
 
 }
 void printADC_IR()
@@ -462,40 +527,42 @@ void conversionADC()
 	sharp[0]=65.302-sharp[0]*27.77;
 
 	//validar pulso adc 4
-
-	if(adc_value[4]>3000 && adc_value[4]<3400)
+	if(menu!=combate)
 	{
-		if(pulsoConstante==false)
+		if(adc_value[4]>2900 && adc_value[4]<3500)
 		{
-			seleccionEstrategia++;
-			if(seleccionEstrategia>3)
+			if(pulsoConstante==false)
 			{
-				seleccionEstrategia=0;
+				seleccionEstrategia++;
+				if(seleccionEstrategia>3)
+				{
+					seleccionEstrategia=0;
+				}
+				pulsoConstante=true;
 			}
-			pulsoConstante=true;
+		}
+		else if (adc_value[4]>1600 && adc_value[4]<2100) {
+			if(pulsoConstante==false)
+			{
+				seleccionEstrategia--;
+				if(seleccionEstrategia<0)
+				{
+					seleccionEstrategia=3;
+				}
+				pulsoConstante=true;
+			}
+		}
+		else if (adc_value[4]>3700 && adc_value[4]<4065) {
+			if(pulsoConstante==false)
+			{
+				pulsoConstante=true;
+			}
+
+		}
+		else{
+			pulsoConstante=false;
 		}
 	}
-	else if (adc_value[4]>3800 && adc_value[4]<4065) {
-		if(pulsoConstante==false)
-				{
-			seleccionEstrategia--;
-						if(seleccionEstrategia<0)
-						{
-							seleccionEstrategia=3;
-						}
-					pulsoConstante=true;
-				}
-	}
-	else if (adc_value[4]>1700 && adc_value[4]<1900) {
-		if(pulsoConstante==false)
-				{
-					pulsoConstante=true;
-				}
-
-	}
-	else{
-						pulsoConstante=false;
-					}
 	HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, ((seleccionEstrategia)>>1)&1);
 
 	HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, (seleccionEstrategia)&1);
@@ -560,9 +627,7 @@ void RC5_recepcion()
 		else if(standby ==2)
 		{
 			menu=combate;
-			motorZumo.PWM_Left=0;
-			motorZumo.PWM_Right=200;
-			motorZumo.direccion=adelante;
+
 			HAL_GPIO_WritePin(LED_OK_GPIO_Port, LED_OK_Pin, GPIO_PIN_RESET);
 			standby=1 ;
 		}
