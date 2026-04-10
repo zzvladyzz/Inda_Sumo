@@ -58,11 +58,18 @@ typedef struct{
 /* USER CODE BEGIN PD */
 #define convVolt 0.000825396  //3.38/4095
 #define divisorRes  0.259259		//r1=100k r2 35k
-
+/*
 #define LL_sharp valorfinalestable[3]
 #define LR_sharp valorfinalestable[2]
 #define RL_sharp valorfinalestable[1]
 #define RR_sharp valorfinalestable[0]
+*/
+#define LL_sharp sharp[3]
+#define LR_sharp sharp[2]
+#define RL_sharp sharp[1]
+#define RR_sharp sharp[0]
+#define valorDistancia  30.0  // o 16000
+
 #define filtroShift 1
 #define UmbralRuido 10
 
@@ -118,6 +125,7 @@ int32_t valorfinalestable[4]={2048u,2048u,2048u,2048u};
 
 bool leftLine=false;
 bool rightLine=false;
+uint8_t accion=0;
 char buffer[30];
 /* USER CODE END PV */
 
@@ -216,7 +224,7 @@ HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, 0);
 	  	  RC5_recepcion();	//Aca se reciben datos y se obtiene address y command
 
 	  	  tiempo=HAL_GetTick();
-	  	  if((tiempo-tiempoAnterior)>5)
+	  	  if((tiempo-tiempoAnterior)>3)
 	  	  {
 	  		  conversionADC();
 	  		  tiempoAnterior=tiempo;
@@ -232,7 +240,6 @@ HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, 0);
 	  		  }
 	  		  tiempoAnteriorVoltaje=tiempo;
 	  	  }
-
 
 	  	  if (menu==combate) {
 	  		  motorZumo.enable=true;
@@ -254,7 +261,6 @@ HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, 0);
 
 	  		  motores(&motorZumo);
 	  	  }
-
 
 
 
@@ -348,41 +354,26 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 
     }
     else if (GPIO_Pin == Left_Line_Pin) {
-
-    	if(seleccionEstrategia==1 )
-    	{
-    		if(HAL_GPIO_ReadPin(Right_Line_GPIO_Port, Right_Line_Pin)==0)
-    		{
-    			rightLine=true;
-    			//borrar si no sirve es para pruebas
-    			HAL_GPIO_WritePin(LED_ALARMA_GPIO_Port, LED_ALARMA_Pin, GPIO_PIN_SET);
-    			detener();
-    		}
-    		leftLine=true;
-
-    		motorZumo.PWM_Left=0;
-    		motorZumo.PWM_Right=0;
-    		motores(&motorZumo);
-    	}
-    	else{
-    		detener();
-    	}
-    }
-    else if (GPIO_Pin == Right_Line_Pin) {
-    	if(seleccionEstrategia==1 )
-    	{
-    		if(HAL_GPIO_ReadPin(Left_Line_GPIO_Port, Left_Line_Pin)==0)
+    	if(HAL_GPIO_ReadPin(Left_Line_GPIO_Port, Left_Line_Pin)==0){
+    		if(seleccionEstrategia==1 || seleccionEstrategia==0)
     		{
     			leftLine=true;
-    			//borrar si no sirve es para pruebas
-    			HAL_GPIO_WritePin(LED_ALARMA_GPIO_Port, LED_ALARMA_Pin, GPIO_PIN_SET);
-    			detener();
+    			rightLine=false;
+    			HAL_GPIO_WritePin(LED_ALARMA_GPIO_Port, LED_ALARMA_Pin, 1);
     		}
-    		rightLine=true;
+    			else{
+    				detener();
+    			}
+    		}
+    	}
 
-    		motorZumo.PWM_Left=0;
-    		motorZumo.PWM_Right=0;
-    		motores(&motorZumo);
+    else if (GPIO_Pin == Right_Line_Pin) {
+    	if(seleccionEstrategia==1 || seleccionEstrategia==0)
+    	{
+    		leftLine=false;
+    		rightLine=true;
+    		HAL_GPIO_WritePin(LED_ALARMA_GPIO_Port, LED_ALARMA_Pin, 0);
+
     	}
     	else{
     		detener();
@@ -448,10 +439,10 @@ void RC5_recepcion()
 }
 void estrategia2()
 {
-	if( LR_sharp > 1600 || RL_sharp>1600)
+	if( LR_sharp < valorDistancia || RL_sharp<valorDistancia)
 	{
-		motorZumo.PWM_Left=800;
-		motorZumo.PWM_Right=800;
+		motorZumo.PWM_Left=500;
+		motorZumo.PWM_Right=500;
 		validarGiro=false;
 		direccionGiro=false;
 	}
@@ -486,16 +477,16 @@ void estrategia2()
 }
 void estrategia0()
 {
-	if( LR_sharp > 1600 || RL_sharp>1600)
+	if( LR_sharp < valorDistancia || RL_sharp<valorDistancia)
 	{
-		motorZumo.PWM_Left=800;
-		motorZumo.PWM_Right=800;
+		motorZumo.PWM_Left=600;
+		motorZumo.PWM_Right=600;
 
 	}
 	else
 	{
-		motorZumo.PWM_Left=200;
-		motorZumo.PWM_Right=-200;
+		motorZumo.PWM_Left=300;
+		motorZumo.PWM_Right=-300;
 
 	}
 }
@@ -506,78 +497,46 @@ void estrategia1()
 
 	if(leftLine==true && rightLine==false)
 	{
-		if( LR_sharp > 1600 || RL_sharp>1600)
-		{
-			motorZumo.PWM_Left=600;
-			motorZumo.PWM_Right=600;
-			rightLine=false;
-			leftLine=false;
-
-		}
-		else
-		{
-			motorZumo.PWM_Left=200;
-			motorZumo.PWM_Right=-200;
-		}
-
+		accion=1;
 	}
 	else if(leftLine==false && rightLine==true)
 	{
-		if( LR_sharp > 1600 || RL_sharp>1600)
-		{
-			motorZumo.PWM_Left=600;
-			motorZumo.PWM_Right=600;
-			rightLine=false;
-			leftLine=false;
-
-		}
-		else
-		{
-			motorZumo.PWM_Left=-200;
-			motorZumo.PWM_Right=200;
-		}
-
+		accion=2;
 	}
-	else if(leftLine==false && rightLine==false)
+	else if (leftLine==false && rightLine==false) {
+		accion=0;
+	}
+	if(LR_sharp < valorDistancia && RL_sharp<valorDistancia)
 	{
-		if( LR_sharp > 1600 || RL_sharp>1600)
-		{
-			motorZumo.PWM_Left=600;
-			motorZumo.PWM_Right=600;
-		}
-		else
-		{
-			motorZumo.PWM_Left=-200;
-			motorZumo.PWM_Right=200;
-		}
+		accion=0;
+		leftLine=false;
+		rightLine=false;
 	}
-	else if(leftLine==true && rightLine==true)
-	{
-		//rotar mejorar
 
-		if(validarGiro==false)
-		{
-			validarGiro=true;
-			tiempoGiro=HAL_GetTick();
-		}
-		else
-		{
-			tiempo=HAL_GetTick();
-			if((tiempo-tiempoGiro)>500)
-			{
-				motorZumo.PWM_Left=400;
-				motorZumo.PWM_Right=400;
-				leftLine=false;
-				rightLine=false;
-				validarGiro=false;
-			}
-			else{
-				motorZumo.PWM_Left=-300;
-				motorZumo.PWM_Right=300;
-			}
-		}
+switch (accion) {
+	case 1:
+		motorZumo.PWM_Left=250;
+		motorZumo.PWM_Right=-250;
 
-	}
+		break;
+	case 2:
+		motorZumo.PWM_Left=-250;
+		motorZumo.PWM_Right=250;
+
+			break;
+	case 3:
+		motorZumo.PWM_Left=400;
+		motorZumo.PWM_Right=350;
+
+			break;
+	case 0:
+		motorZumo.PWM_Left=450;
+		motorZumo.PWM_Right=400;
+
+			break;
+	default:
+		break;
+}
 
 
 }
@@ -599,6 +558,7 @@ void detener()
 	validarGiro=false;
 	direccionGiro=false;
 	tiempoGiro=0;
+	accion=0;
 }
 /*
  * funciona para activar motores con inversion pero si se cambia de motores
@@ -655,16 +615,16 @@ void conversionADC()
 	voltaje=voltaje/divisorRes;
 
 	// corriente I=(V-1.65)/0.66
-
+/*
 	corrienteML=adc_value[5]*convVolt;
 	corrienteML=corrienteML-1.65;
 	corrienteML=corrienteML/0.66;
 
 	corrienteMR=adc_value[6]*convVolt;
 	corrienteMR=corrienteMR-1.65;
-	corrienteMR=corrienteMR/0.66;
+	corrienteMR=corrienteMR/0.66;*/
 	// Valores IR en cm  d=65.302-27.77*V
-/*
+
 	sharp[3]=adc_value[3]*convVolt;
 	sharp[2]=adc_value[2]*convVolt;
 	sharp[1]=adc_value[1]*convVolt;
@@ -674,7 +634,7 @@ void conversionADC()
 	sharp[2]=65.302-sharp[2]*27.77;
 	sharp[1]=65.302-sharp[1]*27.77;
 	sharp[0]=65.302-sharp[0]*27.77;
-*/
+/*
 	for(int8_t x=0;x<4;x++)
 	{
 	valorfiltrado[x]=valorfiltrado[x]+((adc_value[x]-valorfiltrado[x])>>filtroShift);
@@ -700,7 +660,7 @@ void conversionADC()
 				}
 
 	}
-
+*/
 	//validar pulso adc 4
 	if(menu!=combate)
 	{
@@ -716,7 +676,7 @@ void conversionADC()
 				pulsoConstante=true;
 			}
 		}
-		else if (adc_value[4]>1600 && adc_value[4]<2100) {
+		else if (adc_value[4]>1400 && adc_value[4]<2400) {
 			if(pulsoConstante==false)
 			{
 				seleccionEstrategia--;
@@ -727,7 +687,7 @@ void conversionADC()
 				pulsoConstante=true;
 			}
 		}
-		else if (adc_value[4]>3700 && adc_value[4]<4065) {
+		else if (adc_value[4]>3600 && adc_value[4]<4064) {
 			if(pulsoConstante==false)
 			{
 				pulsoConstante=true;
