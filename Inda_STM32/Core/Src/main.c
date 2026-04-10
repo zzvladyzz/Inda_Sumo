@@ -33,15 +33,8 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-typedef enum{
-	preparado,
-	combate,
-	estrategia,
-	debug,
-	testIR,
-	testLinea,
-	stop
-}MenuZumo;
+
+
 typedef enum{
 	adelante,
 	atras
@@ -58,20 +51,15 @@ typedef struct{
 /* USER CODE BEGIN PD */
 #define convVolt 0.000825396  //3.38/4095
 #define divisorRes  0.259259		//r1=100k r2 35k
-/*
-#define LL_sharp valorfinalestable[3]
-#define LR_sharp valorfinalestable[2]
-#define RL_sharp valorfinalestable[1]
-#define RR_sharp valorfinalestable[0]
-*/
+
 #define LL_sharp sharp[3]
 #define LR_sharp sharp[2]
 #define RL_sharp sharp[1]
 #define RR_sharp sharp[0]
-#define valorDistancia  30.0  // o 16000
+#define distanciaMaxima  33.0  // o 16000
+#define distanciaMinima  15.0  // o 16000
 
-#define filtroShift 1
-#define UmbralRuido 10
+
 
 /* USER CODE END PD */
 
@@ -84,7 +72,7 @@ typedef struct{
 
 /* USER CODE BEGIN PV */
 Motores motorZumo;
-MenuZumo menu;
+
 uint16_t adc_value[8];
 uint16_t array[15]={};
 
@@ -99,7 +87,7 @@ volatile bool 	RC5_state=false;
 volatile uint16_t IR_38KHZ=0;
 
 uint8_t standby=0;
-
+bool combate=false;
 
 float voltaje=0;
 float corrienteML=0;
@@ -110,8 +98,6 @@ float sharp[4]={};
 bool pulsoConstante=false;
 int8_t seleccionEstrategia=0;
 
-bool validarGiro=false;
-bool direccionGiro=false;
 
 uint32_t tiempo=0u;
 uint32_t tiempoAnterior=0u;
@@ -120,11 +106,10 @@ uint32_t tiempoMenu=0u;
 uint32_t tiempoGiro=0u;
 
 
-int32_t valorfiltrado[4]={2048u,2048u,2048u,2048u};
-int32_t valorfinalestable[4]={2048u,2048u,2048u,2048u};
 
 bool leftLine=false;
 bool rightLine=false;
+bool buscar=false;
 uint8_t accion=0;
 char buffer[30];
 /* USER CODE END PV */
@@ -136,8 +121,7 @@ void motores(Motores *motor);
 void detener();
 void printADC();
 void printADC_IR();
-void printADC_Volt_Amp();
-void printFiltroIR();
+void printADC_Volt_Amp();;
 void printRC5();
 void RC5_recepcion();
 void conversionADC();
@@ -235,34 +219,31 @@ HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, 0);
 	  	  {
 	  		  if(voltaje<6.7)
 	  		  {
-	  			  HAL_GPIO_TogglePin(LED_ALARMA_GPIO_Port, LED_ALARMA_Pin);
+	  			  HAL_GPIO_WritePin(LED_ALARMA_GPIO_Port, LED_ALARMA_Pin,1);
 	  			  detener();
 	  		  }
 	  		  tiempoAnteriorVoltaje=tiempo;
 	  	  }
+	  	  if((HAL_GetTick()-tiempoMenu)>10)
+	  	  {
+	  		  tiempoMenu=HAL_GetTick();
+	  		  if (combate) {
+	  			  motorZumo.enable=true;
 
-	  	  if (menu==combate) {
-	  		  motorZumo.enable=true;
+	  			  if(seleccionEstrategia==0)
+	  			  {
 
-	  		  if(seleccionEstrategia==0)
-	  		  {
+	  				  estrategia0();
+	  			  }
+	  			  else if(seleccionEstrategia==1)
+	  			  {
+	  				  estrategia1();
+	  			  }
 
-	  			  estrategia0();
+	  			  motores(&motorZumo);
 	  		  }
-	  		  else if(seleccionEstrategia==1)
-	  		  {
-	  			  estrategia1();
-	  		  }
-	  		else if(seleccionEstrategia==2)
-	  			  		  {
-	  			  			  estrategia2();
-	  			  		  }
 
-
-	  		  motores(&motorZumo);
 	  	  }
-
-
 
     /* USER CODE END WHILE */
 
@@ -355,11 +336,20 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     }
     else if (GPIO_Pin == Left_Line_Pin) {
     	if(HAL_GPIO_ReadPin(Left_Line_GPIO_Port, Left_Line_Pin)==0){
-    		if(seleccionEstrategia==1 || seleccionEstrategia==0)
+    		if(seleccionEstrategia==1 )
     		{
-    			leftLine=true;
-    			rightLine=false;
-    			HAL_GPIO_WritePin(LED_ALARMA_GPIO_Port, LED_ALARMA_Pin, 1);
+    			if(HAL_GPIO_ReadPin(Right_Line_GPIO_Port, Right_Line_Pin)==0)
+    			{
+    				accion=4;
+    			}
+    			else
+    			{
+    			accion=1;
+    			}
+
+    		}
+    		else if(seleccionEstrategia==0){
+
     		}
     			else{
     				detener();
@@ -368,13 +358,21 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     	}
 
     else if (GPIO_Pin == Right_Line_Pin) {
-    	if(seleccionEstrategia==1 || seleccionEstrategia==0)
+    	if(seleccionEstrategia==1 )
     	{
-    		leftLine=false;
-    		rightLine=true;
-    		HAL_GPIO_WritePin(LED_ALARMA_GPIO_Port, LED_ALARMA_Pin, 0);
+    		if(HAL_GPIO_ReadPin(Left_Line_GPIO_Port, Left_Line_Pin)==0)
+    		    			{
+    		    				accion=4;
+    		    			}
+    		    			else
+    		    			{
+    		    			accion=2;
+    		    			}
 
     	}
+    	else if(seleccionEstrategia==0){
+
+    	    		}
     	else{
     		detener();
     	}
@@ -421,13 +419,12 @@ void RC5_recepcion()
 		standby++;
 		if(standby==1)
 		{
-			menu=preparado;
 			HAL_GPIO_WritePin(LED_OK_GPIO_Port, LED_OK_Pin, GPIO_PIN_SET);
 
 		}
 		else if(standby ==2)
 		{
-			menu=combate;
+			combate=true;
 
 			HAL_GPIO_WritePin(LED_OK_GPIO_Port, LED_OK_Pin, GPIO_PIN_RESET);
 			standby=1 ;
@@ -437,50 +434,21 @@ void RC5_recepcion()
 		command=0;
 	}
 }
-void estrategia2()
+
+void estrategia0()
 {
-	if( LR_sharp < valorDistancia || RL_sharp<valorDistancia)
+	if( LR_sharp < distanciaMaxima || RL_sharp<distanciaMaxima)
 	{
-		motorZumo.PWM_Left=500;
-		motorZumo.PWM_Right=500;
-		validarGiro=false;
-		direccionGiro=false;
-	}
-	else{
-		if(validarGiro==false)
+		if( LR_sharp < distanciaMinima || RL_sharp<distanciaMinima)
 		{
-			validarGiro=true;
-			tiempoGiro=HAL_GetTick();
+			motorZumo.PWM_Left=700;
+			motorZumo.PWM_Right=700;
 		}
 		else
 		{
-			tiempo=HAL_GetTick();
-			if((tiempo-tiempoGiro)>500)
-			{
-				direccionGiro=!direccionGiro;
-				validarGiro=false;
-			}
-			if(direccionGiro)
-			{
-				motorZumo.PWM_Left=-300;
-				motorZumo.PWM_Right=300;
-			}
-			else
-			{
-				motorZumo.PWM_Left=-300;
-				motorZumo.PWM_Right=300;
-			}
-
+			motorZumo.PWM_Left=400;
+			motorZumo.PWM_Right=400;
 		}
-	}
-
-}
-void estrategia0()
-{
-	if( LR_sharp < valorDistancia || RL_sharp<valorDistancia)
-	{
-		motorZumo.PWM_Left=600;
-		motorZumo.PWM_Right=600;
 
 	}
 	else
@@ -494,39 +462,39 @@ void estrategia1()
 {
 
 	// ir a linea iquierda en contrarla y buscar enemigo por derecha
+float promedio=(sharp[2]+sharp[1])/2;
+if(promedio<distanciaMaxima)
+{
+	if(promedio<distanciaMinima)
+	{
+		accion=3;
+	}
+	else{
+		accion=0;
 
-	if(leftLine==true && rightLine==false)
-	{
-		accion=1;
 	}
-	else if(leftLine==false && rightLine==true)
-	{
-		accion=2;
-	}
-	else if (leftLine==false && rightLine==false) {
-		accion=0;
-	}
-	if(LR_sharp < valorDistancia && RL_sharp<valorDistancia)
-	{
-		accion=0;
-		leftLine=false;
-		rightLine=false;
-	}
+
+}
+
 
 switch (accion) {
 	case 1:
-		motorZumo.PWM_Left=250;
-		motorZumo.PWM_Right=-250;
+		motorZumo.PWM_Left=200;
+		motorZumo.PWM_Right=-200;
 
 		break;
 	case 2:
-		motorZumo.PWM_Left=-250;
-		motorZumo.PWM_Right=250;
+		motorZumo.PWM_Left=-200;
+		motorZumo.PWM_Right=200;
 
 			break;
-	case 3:
-		motorZumo.PWM_Left=400;
-		motorZumo.PWM_Right=350;
+	case 4:
+
+		motorZumo.PWM_Left=-400;
+				motorZumo.PWM_Right=-400;
+				motores(&motorZumo);
+				HAL_Delay(200);
+				accion=1;
 
 			break;
 	case 0:
@@ -534,12 +502,17 @@ switch (accion) {
 		motorZumo.PWM_Right=400;
 
 			break;
+	case 3:
+		motorZumo.PWM_Left=600;
+		motorZumo.PWM_Right=600;
+
+			break;
 	default:
 		break;
 }
-
-
 }
+
+
 void detener()
 {
 	HAL_GPIO_TogglePin(LED_ALARMA_GPIO_Port, LED_ALARMA_Pin);
@@ -552,13 +525,12 @@ void detener()
 	address=0;
 	command=0;
 	standby=0;
-	menu=stop;
+	combate=false;
 	leftLine=false;
 	rightLine=false;
-	validarGiro=false;
-	direccionGiro=false;
 	tiempoGiro=0;
 	accion=0;
+	buscar=false;
 }
 /*
  * funciona para activar motores con inversion pero si se cambia de motores
@@ -662,7 +634,7 @@ void conversionADC()
 	}
 */
 	//validar pulso adc 4
-	if(menu!=combate)
+	if(!combate)
 	{
 		if(adc_value[4]>2900 && adc_value[4]<3500)
 		{
@@ -704,24 +676,6 @@ void conversionADC()
 
 }
 
-void printFiltroIR()
-{
-	sprintf(buffer,"LL= %lu",valorfinalestable[3]);
-			HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
-
-			sprintf(buffer,"  LR=  %lu",valorfinalestable[2]);
-			HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
-
-			sprintf(buffer,"  RL= %lu",valorfinalestable[1]);
-			HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
-
-			sprintf(buffer," RR= %lu",valorfinalestable[0]);
-			HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
-
-			sprintf(buffer,"\r\n");
-			HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
-			HAL_Delay(500);
-}
 void printRC5()
 {
 		sprintf(buffer," start %u ",start);
