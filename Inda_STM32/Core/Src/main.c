@@ -103,7 +103,8 @@ float sharp[4]={};
 bool pulsoConstante=false;
 int8_t seleccionEstrategia=0;
 
-bool validarGiro=0;
+bool validarGiro=false;
+bool direccionGiro=false;
 
 uint32_t tiempo=0u;
 uint32_t tiempoAnterior=0u;
@@ -447,6 +448,40 @@ void RC5_recepcion()
 }
 void estrategia2()
 {
+	if( LR_sharp > 1600 || RL_sharp>1600)
+	{
+		motorZumo.PWM_Left=800;
+		motorZumo.PWM_Right=800;
+		validarGiro=false;
+		direccionGiro=false;
+	}
+	else{
+		if(validarGiro==false)
+		{
+			validarGiro=true;
+			tiempoGiro=HAL_GetTick();
+		}
+		else
+		{
+			tiempo=HAL_GetTick();
+			if((tiempo-tiempoGiro)>500)
+			{
+				direccionGiro=!direccionGiro;
+				validarGiro=false;
+			}
+			if(direccionGiro)
+			{
+				motorZumo.PWM_Left=-300;
+				motorZumo.PWM_Right=300;
+			}
+			else
+			{
+				motorZumo.PWM_Left=-300;
+				motorZumo.PWM_Right=300;
+			}
+
+		}
+	}
 
 }
 void estrategia0()
@@ -562,6 +597,8 @@ void detener()
 	leftLine=false;
 	rightLine=false;
 	validarGiro=false;
+	direccionGiro=false;
+	tiempoGiro=0;
 }
 /*
  * funciona para activar motores con inversion pero si se cambia de motores
