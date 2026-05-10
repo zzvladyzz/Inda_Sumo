@@ -408,13 +408,13 @@ void RC5_recepcion()
 
 	}
 	// Se para todo y se deberia inicializar los valores a 0
-	if(address==0x1F && command==0x3F)
+	if(address==2 && command==0x08)
 	{
 		detener();
 	}
 	// comando para entrar en standby y iniciar robot
 
-	if(address==1 && command==9)
+	if(address==1 && command==4)
 	{
 		standby++;
 		if(standby==1)
@@ -424,7 +424,7 @@ void RC5_recepcion()
 		}
 		else if(standby ==2)
 		{
-			combate=true;
+			combate=false;
 
 			HAL_GPIO_WritePin(LED_OK_GPIO_Port, LED_OK_Pin, GPIO_PIN_RESET);
 			standby=1 ;
