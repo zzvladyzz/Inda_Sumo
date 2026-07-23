@@ -50,7 +50,23 @@
         "silk_text_thickness": 0.1,
         "silk_text_upright": false,
         "zones": {
-          "min_clearance": 0.5
+          "border_display_style": 2,
+          "border_hatch_pitch": 0.5,
+          "corner_radius": 0.0,
+          "corner_smoothing": 0,
+          "fill_mode": 0,
+          "hatch_gap": 1.5,
+          "hatch_orientation": 0.0,
+          "hatch_smoothing_level": 0,
+          "hatch_smoothing_value": 0.1,
+          "hatch_thickness": 1.0,
+          "min_clearance": 0.5,
+          "min_island_area": 10.0,
+          "min_thickness": 0.25,
+          "pad_connection": 1,
+          "remove_islands": 0,
+          "thermal_relief_gap": 0.5,
+          "thermal_relief_spoke_width": 0.5
         }
       },
       "diff_pair_dimensions": [
@@ -628,7 +644,7 @@
       "default_line_thickness": 6.0,
       "default_text_size": 50.0,
       "field_names": [],
-      "hop_over_size_choice": 0,
+      "hop_over_size_choice": 3,
       "intersheets_ref_own_page": false,
       "intersheets_ref_prefix": "",
       "intersheets_ref_short": false,
@@ -669,7 +685,7 @@
         "uuid": "0fd92b06-954d-41bf-a53b-1bc8635b69f8"
       }
     ],
-    "used_designators": "",
+    "used_designators": "#FLG1-3,R21-23,J7,J19-20,U3-4,C36,C39-43,L1,#PWR2,#PWR28-29,#PWR32,#PWR40-47",
     "variants": []
   },
   "sheets": [
@@ -679,11 +695,7 @@
     ],
     [
       "e262f485-2254-4678-ae00-feca137e79f0",
-      "Motores"
-    ],
-    [
-      "9de551df-997c-4128-9cd2-72ccb331c1f9",
-      "INFRAROJOS"
+      "MOTOR"
     ],
     [
       "b022e595-33bd-440b-84f6-8dfa037dfa4f",
@@ -691,7 +703,7 @@
     ],
     [
       "5718c1eb-8efd-49e8-a054-b8ab45346b8a",
-      "sensores_linea"
+      "SENSOR_LINEA"
     ]
   ],
   "text_variables": {},
