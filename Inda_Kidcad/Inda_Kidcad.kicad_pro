@@ -60,10 +60,10 @@
           "hatch_smoothing_level": 0,
           "hatch_smoothing_value": 0.1,
           "hatch_thickness": 1.0,
-          "min_clearance": 0.5,
+          "min_clearance": 0.4,
           "min_island_area": 10.0,
           "min_thickness": 0.25,
-          "pad_connection": 1,
+          "pad_connection": 2,
           "remove_islands": 0,
           "thermal_relief_gap": 0.5,
           "thermal_relief_spoke_width": 0.5
@@ -498,7 +498,7 @@
       "similar_labels": "warning",
       "similar_power": "warning",
       "simulation_model_issue": "ignore",
-      "single_global_label": "ignore",
+      "single_global_label": "error",
       "stacked_pin_name": "warning",
       "unannotated": "error",
       "unconnected_wire_endpoint": "warning",
@@ -685,7 +685,7 @@
         "uuid": "0fd92b06-954d-41bf-a53b-1bc8635b69f8"
       }
     ],
-    "used_designators": "#FLG1-3,R21-23,J7,J19-20,U3-4,C36,C39-43,L1,#PWR2,#PWR28-29,#PWR32,#PWR40-47",
+    "used_designators": "R1-28,#FLG1-3,J1-15,J19-20,U1-11,U13,C1-31,C36,C39-43,L1,#PWR1-65,JP1-2,D1-6,H1-4,Q1-2,SW1-6,Y1",
     "variants": []
   },
   "sheets": [

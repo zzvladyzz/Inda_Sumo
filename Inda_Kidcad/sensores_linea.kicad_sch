@@ -1793,7 +1793,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "15f2caff-b852-4f7f-bdbc-67982364d194")
-		(property "Reference" "C33"
+		(property "Reference" "C26"
 			(at 45.72 74.9299 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -1857,7 +1857,7 @@
 		(instances
 			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/5718c1eb-8efd-49e8-a054-b8ab45346b8a"
-					(reference "C33")
+					(reference "C26")
 					(unit 1)
 				)
 			)
@@ -1875,7 +1875,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "1bafa441-e81c-45e7-8b6c-d6c417e693ce")
-		(property "Reference" "J6"
+		(property "Reference" "J15"
 			(at 155.575 52.07 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -1940,7 +1940,7 @@
 		(instances
 			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/5718c1eb-8efd-49e8-a054-b8ab45346b8a"
-					(reference "J6")
+					(reference "J15")
 					(unit 1)
 				)
 			)
@@ -1958,7 +1958,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2ac02440-12ae-473b-b239-d024c3745835")
-		(property "Reference" "J5"
+		(property "Reference" "J13"
 			(at 37.465 49.53 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2023,7 +2023,7 @@
 		(instances
 			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/5718c1eb-8efd-49e8-a054-b8ab45346b8a"
-					(reference "J5")
+					(reference "J13")
 					(unit 1)
 				)
 			)
@@ -2041,7 +2041,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "5c9f2879-e2cc-43ae-b960-fa2b1684d9b8")
-		(property "Reference" "R29"
+		(property "Reference" "R27"
 			(at 176.53 29.2099 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2105,7 +2105,7 @@
 		(instances
 			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/5718c1eb-8efd-49e8-a054-b8ab45346b8a"
-					(reference "R29")
+					(reference "R27")
 					(unit 1)
 				)
 			)
@@ -2123,7 +2123,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "6649d09e-04ae-4712-bf2f-311a4bf67173")
-		(property "Reference" "R28"
+		(property "Reference" "R26"
 			(at 152.4 29.2099 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2187,7 +2187,7 @@
 		(instances
 			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/5718c1eb-8efd-49e8-a054-b8ab45346b8a"
-					(reference "R28")
+					(reference "R26")
 					(unit 1)
 				)
 			)
@@ -2205,7 +2205,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "7907af43-123b-4c91-93da-a4c57a100877")
-		(property "Reference" "R27"
+		(property "Reference" "R25"
 			(at 116.84 27.9399 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2269,7 +2269,7 @@
 		(instances
 			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/5718c1eb-8efd-49e8-a054-b8ab45346b8a"
-					(reference "R27")
+					(reference "R25")
 					(unit 1)
 				)
 			)
@@ -2287,7 +2287,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "7b6b01bf-f16c-4e88-a868-16122ba85a08")
-		(property "Reference" "R25"
+		(property "Reference" "R23"
 			(at 57.15 29.2099 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2351,7 +2351,7 @@
 		(instances
 			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/5718c1eb-8efd-49e8-a054-b8ab45346b8a"
-					(reference "R25")
+					(reference "R23")
 					(unit 1)
 				)
 			)
@@ -2369,7 +2369,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "9cf716b4-5aa4-45fd-8c93-41a2b097b431")
-		(property "Reference" "C35"
+		(property "Reference" "C28"
 			(at 165.1 73.6599 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2433,7 +2433,7 @@
 		(instances
 			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/5718c1eb-8efd-49e8-a054-b8ab45346b8a"
-					(reference "C35")
+					(reference "C28")
 					(unit 1)
 				)
 			)
@@ -2538,7 +2538,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a9e87004-7cd0-4b3f-9539-8957997ea833")
-		(property "Reference" "J4"
+		(property "Reference" "J14"
 			(at 95.885 50.8 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2603,7 +2603,7 @@
 		(instances
 			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/5718c1eb-8efd-49e8-a054-b8ab45346b8a"
-					(reference "J4")
+					(reference "J14")
 					(unit 1)
 				)
 			)
@@ -2621,7 +2621,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "b54af951-49cb-4953-a9be-a943338571cb")
-		(property "Reference" "C34"
+		(property "Reference" "C27"
 			(at 97.79 76.1999 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2685,7 +2685,7 @@
 		(instances
 			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/5718c1eb-8efd-49e8-a054-b8ab45346b8a"
-					(reference "C34")
+					(reference "C27")
 					(unit 1)
 				)
 			)
@@ -2877,7 +2877,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "de09939f-c0fa-4835-913b-1e4516411720")
-		(property "Reference" "R24"
+		(property "Reference" "R22"
 			(at 33.02 29.2099 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2941,7 +2941,7 @@
 		(instances
 			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/5718c1eb-8efd-49e8-a054-b8ab45346b8a"
-					(reference "R24")
+					(reference "R22")
 					(unit 1)
 				)
 			)
@@ -2959,7 +2959,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "df0f5177-6429-4330-b657-a9dfb3d1fa68")
-		(property "Reference" "R26"
+		(property "Reference" "R24"
 			(at 92.71 27.9399 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3023,7 +3023,7 @@
 		(instances
 			(project "Inda_Kidcad"
 				(path "/0fd92b06-954d-41bf-a53b-1bc8635b69f8/5718c1eb-8efd-49e8-a054-b8ab45346b8a"
-					(reference "R26")
+					(reference "R24")
 					(unit 1)
 				)
 			)
