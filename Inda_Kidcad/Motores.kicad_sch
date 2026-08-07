@@ -1764,7 +1764,7 @@
 		(uuid "f6d16174-fc09-4d02-8fb9-ff409af82cad")
 	)
 	(label "MOTA_R"
-		(at 35.56 99.06 180)
+		(at 35.56 101.6 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1784,7 +1784,7 @@
 		(uuid "2ade34e4-c5f8-4047-8f7d-4454e86ef5e7")
 	)
 	(label "MOTB_R"
-		(at 35.56 101.6 180)
+		(at 35.56 99.06 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1854,7 +1854,7 @@
 		(uuid "ce93ec17-187c-4383-93e5-58a08b126c2e")
 	)
 	(label "MOTB_L"
-		(at 139.7 88.9 180)
+		(at 139.7 91.44 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1864,7 +1864,7 @@
 		(uuid "ec599691-2096-4491-b3ca-146609bc45d7")
 	)
 	(label "MOTA_L"
-		(at 139.7 91.44 180)
+		(at 139.7 88.9 180)
 		(effects
 			(font
 				(size 1.27 1.27)
