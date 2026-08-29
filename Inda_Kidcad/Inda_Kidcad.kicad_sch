@@ -3800,12 +3800,20 @@
 		(uuid "8a7706ad-336f-4d10-adda-fe2cf95daae8")
 	)
 	(no_connect
+		(at 213.36 97.79)
+		(uuid "8f202bdb-09a7-4aaf-99ef-c5472ce413f3")
+	)
+	(no_connect
 		(at 198.12 97.79)
 		(uuid "b6c768b9-e548-48dc-b592-b70c882aba15")
 	)
 	(no_connect
 		(at 260.35 83.82)
 		(uuid "c137d34a-58dd-4fce-ba23-56406b119432")
+	)
+	(no_connect
+		(at 209.55 97.79)
+		(uuid "c371818a-8551-49e4-96a8-6eaf55659ae7")
 	)
 	(wire
 		(pts
@@ -3916,26 +3924,6 @@
 			(type default)
 		)
 		(uuid "0e3fbc17-2944-4cb8-9866-24a58e902cb6")
-	)
-	(wire
-		(pts
-			(xy 209.55 97.79) (xy 209.55 107.95)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0e87c0f8-48e3-4e06-b3ff-9c6c3901787a")
-	)
-	(wire
-		(pts
-			(xy 213.36 97.79) (xy 213.36 107.95)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0ef362ad-0760-4b16-8915-6c35fba653e1")
 	)
 	(wire
 		(pts
@@ -5647,16 +5635,6 @@
 		)
 		(uuid "04e9f6cb-079f-49a5-9a57-517069e6cf44")
 	)
-	(label "Mod_TX3"
-		(at 213.36 107.95 90)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "08c6b65a-18d4-4d41-b917-a5e8fea2bcf2")
-	)
 	(label "OSC_B"
 		(at 20.32 21.59 180)
 		(effects
@@ -5916,16 +5894,6 @@
 			(justify left bottom)
 		)
 		(uuid "6a1adf4d-0691-42a9-a89e-63872e291ad4")
-	)
-	(label "Mod_TX2"
-		(at 209.55 107.95 90)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "6dc206ae-2942-415d-a849-f57bd9ab57cf")
 	)
 	(label "LED2"
 		(at 123.19 109.22 270)

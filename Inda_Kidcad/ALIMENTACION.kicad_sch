@@ -4369,7 +4369,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Footprint:XT30_H_M"
+		(property "Footprint" "Connector_AMASS:AMASS_XT30PW-M_1x02_P2.50mm_Horizontal"
 			(at 17.78 35.56 0)
 			(hide yes)
 			(show_name no)
