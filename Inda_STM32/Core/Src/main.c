@@ -29,22 +29,21 @@
 #include "stdio.h"
 #include "string.h"
 #include "stdbool.h"
+#include "LIB_Motores.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
 
-typedef enum{
-	adelante,
-	atras
-}Direccion;
-typedef struct{
-	int16_t PWM_Left;
-	int16_t PWM_Right;
-	bool enable;
-	Direccion direccion;
-}Motores;
+
+typedef enum
+{
+	estrategiaA,
+	estrategiaB,
+	start,
+	stop
+}MandoRC5s;
 
 typedef struct{
 	uint16_t start;
@@ -83,13 +82,11 @@ typedef struct{
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-Motores motorZumo;
 RC5s	rc5={0};
-
+MandoRC5s MandoRC5=stop;
+Motores_Init Zumo;
 
 uint16_t adc_value[8];
-uint16_t array[15]={};
-
 
 uint8_t standby=0;
 bool combate=false;
@@ -98,32 +95,24 @@ float voltaje=0;
 float corrienteML=0;
 float corrienteMR=0;
 float sharp[4]={};
-
+float media[4][5]={};
 
 bool pulsoConstante=false;
 int8_t seleccionEstrategia=0;
 
 
-uint32_t tiempo=0u;
-uint32_t tiempoAnterior=0u;
-uint32_t tiempoAnteriorVoltaje=0u;
-uint32_t tiempoMenu=0u;
-uint32_t tiempoGiro=0u;
 
 
 
 bool leftLine=false;
 bool rightLine=false;
-bool buscar=false;
-uint8_t accion=0;
+
 char buffer[30];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-void motores(Motores *motor);
-void detener();
 void printADC();
 void printADC_IR();
 void printADC_Volt_Amp();;
@@ -131,9 +120,7 @@ void printRC5();
 void RC5_recepcion();
 void conversionADC();
 void filtroSharp();
-void estrategia2();
-void estrategia1();
-void estrategia0();
+
 
 /* USER CODE END PFP */
 
@@ -180,32 +167,21 @@ int main(void)
 
 HAL_ADC_Start_DMA(&hadc1, (uint32_t *)adc_value, 8);
 
-HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
-HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
-HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
-HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
+Zumo.PWM_ML=0;
+Zumo.PWM_MR=0;
+Zumo.ENABLE=0;
+Inicializar_Motores(&Zumo);
 
-__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_1,0);
-__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_2,0);
-__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_3,0);
-__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_4,0);
-
-motorZumo.PWM_Left=0;
-motorZumo.PWM_Right=0;
-motorZumo.enable=0;
-motorZumo.direccion=adelante;
-motores(&motorZumo);
-
-HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, 1);
-HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, 1);
-
+LED_OK_GPIO_Port->ODR|=  LED_OK_Pin;
 HAL_Delay(1000);
-HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, 0);
-HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, 0);
+LED_OK_GPIO_Port->ODR&= ~LED_OK_Pin;
 
 
 __HAL_TIM_SET_AUTORELOAD(&htim2, 1332);
 __HAL_TIM_SET_COUNTER(&htim2, 0);
+HAL_TIM_GenerateEvent(&htim2, TIM_EVENTSOURCE_UPDATE);
+__HAL_TIM_CLEAR_FLAG(&htim2, TIM_FLAG_UPDATE);
+
 __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_8);
   /* USER CODE END 2 */
 
@@ -213,8 +189,17 @@ __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_8);
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  	  RC5_recepcion();	//Aca se reciben datos y se obtiene address y command
+	  RC5_recepcion();	//Aca se reciben datos y se obtiene address y command
 
+	  if(MandoRC5==start)
+	  {
+		  LED_OK_GPIO_Port->ODR|=LED_OK_Pin;
+		  conversionADC();
+		  printADC_Volt_Amp();
+	  }
+	  else if (MandoRC5==stop) {
+		  LED_OK_GPIO_Port->ODR&=~LED_OK_Pin;
+	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -277,7 +262,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     	{
     		__HAL_TIM_SET_AUTORELOAD(&htim2,1777);
     		Frecuencia=false;
-    		HAL_GPIO_WritePin(SERVO_GPIO_Port, SERVO_Pin, 0);
     	}
     	uint8_t RC5_bit=(HAL_GPIO_ReadPin(IR_38KHZ_GPIO_Port, IR_38KHZ_Pin)==GPIO_PIN_SET)?1:0;
     	rc5.trama=(rc5.trama<<1)|RC5_bit;
@@ -290,7 +274,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     	    		Frecuencia=true;
     	            __HAL_TIM_SET_AUTORELOAD(&htim2, 1332);
     	            __HAL_TIM_SET_COUNTER(&htim2, 0);
-    	    		//__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_8);
     	    	}
 
 
@@ -300,8 +283,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
     if(GPIO_Pin == IR_38KHZ_Pin)
     {
-    	HAL_GPIO_WritePin(SERVO_GPIO_Port, SERVO_Pin, 1);
-
         // 1. Bloqueamos el EXTI para que los cambios de bit no reinicien el Timer
 		if(!rc5.IntQ){
     		HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
@@ -314,10 +295,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
             rc5.IntQ=true;
             rc5.state=false;
 
-
             // 2. Sincronización: Esperamos 1333us para leer el primer bit en su zona estable
             //__HAL_TIM_SET_AUTORELOAD(&htim2, 1332);
-           // __HAL_TIM_SET_COUNTER(&htim2, 0);
+            //__HAL_TIM_SET_COUNTER(&htim2, 0);
             HAL_TIM_Base_Start_IT(&htim2);
 		}
 
@@ -337,132 +317,47 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
  */
 void RC5_recepcion()
 {
+	static uint16_t new=0u;
 	if(rc5.state)
 	{
-		uint16_t datos=0;
-		for(uint8_t c=0;c<=15;c++)
-		{
-			datos=(rc5.trama>>c)&0x01;
-		sprintf(buffer,"%u ",datos);
-		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
-
-		}
-		sprintf(buffer," \r\n ");
-			HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
-
-		// Se desfasa 2 posiciones mas para evitar leer en rebote de ir
-			rc5.start=(rc5.trama>>14)&0x03;
-		if(rc5.start==1){
-			rc5.toggle=(rc5.trama>>13)&0x01;
-			rc5.address=(rc5.trama>>8)&0x1F;
-			rc5.command=(rc5.trama>>2)&0x3F;
-			//printRC5();
+		rc5.start=(rc5.trama>>12)&0x03;
+		if(rc5.start==3){
+			rc5.toggle=(rc5.trama>>11)&0x01;
+			rc5.address=(rc5.trama>>6)&0x1F;
+			rc5.command=(rc5.trama>>0)&0x3F;
+			if(rc5.address==0x1F)
+			{
+				new=rc5.command&0x1F;
+			}
+			printRC5();
 		}
 		rc5.trama=0;
 		rc5.state=false;
+		if(rc5.address==new)
+		{
+			switch (rc5.command) {
+			case 0x0F:
+				MandoRC5=stop;
 
+				break;
+			case 0x01:
+				MandoRC5=start;
+				break;
+
+			default:
+				break;
+			}
+		}
 		__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_8);
 		HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 		HAL_NVIC_EnableIRQ(EXTI4_IRQn);
 		HAL_NVIC_EnableIRQ(EXTI3_IRQn);
 
 	}
-	// Se para todo y se deberia inicializar los valores a 0
-	if(rc5.address==2 && rc5.command==0x08)
-	{
-		detener();
-	}
-	// comando para entrar en standby y iniciar robot
-
-	if(rc5.address==1 && rc5.command==4)
-	{
-		standby++;
-		if(standby==1)
-		{
-			HAL_GPIO_WritePin(LED_OK_GPIO_Port, LED_OK_Pin, GPIO_PIN_SET);
-
-		}
-		else if(standby ==2)
-		{
-			combate=false;
-
-			HAL_GPIO_WritePin(LED_OK_GPIO_Port, LED_OK_Pin, GPIO_PIN_RESET);
-			standby=1 ;
-		}
-		rc5.start=0;
-		rc5.address=0;
-		rc5.command=0;
-	}
-}
-
-
-void detener()
-{
-	HAL_GPIO_TogglePin(LED_ALARMA_GPIO_Port, LED_ALARMA_Pin);
-	motorZumo.PWM_Left=0;
-	motorZumo.PWM_Right=0;
-	motorZumo.enable=false;
-	motorZumo.direccion=adelante;
-	motores(&motorZumo);
-	rc5.start=0;
-	rc5.address=0;
-	rc5.command=0;
-	standby=0;
-	combate=false;
-	leftLine=false;
-	rightLine=false;
-	tiempoGiro=0;
-	accion=0;
-	buscar=false;
-}
-/*
- * funciona para activar motores con inversion pero si se cambia de motores
- * corregir los tim_channel_x y hacer pruebas
- */
-void motores(Motores *motor)
-{
-
-	int16_t right=0;
-	if((motor->PWM_Right)>=0)
-	{
-		motor->PWM_Right=((motor->PWM_Right)>999)?999:motor->PWM_Right;
-
-		right=999-(motor->PWM_Right);
-		__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_1,999);
-		__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_2,right);
-	}
-	else if((motor->PWM_Right)<0)
-	{
-		motor->PWM_Right=-1*(motor->PWM_Right);
-		motor->PWM_Right=((motor->PWM_Right)>999)?999:motor->PWM_Right;
-
-		right=999-(motor->PWM_Right);
-		__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_1,right);
-		__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_2,999);
-	}
-
-	int16_t left=0;
-	if((motor->PWM_Left)>=0)
-		{
-		motor->PWM_Left=((motor->PWM_Left)>999)?999:motor->PWM_Left;
-			left=999-(motor->PWM_Left);
-			__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_3,999);
-			__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_4,left);
-		}
-		else if((motor->PWM_Left)<0)
-		{
-			motor->PWM_Left=-(motor->PWM_Left);
-			motor->PWM_Left=((motor->PWM_Left)>999)?999:motor->PWM_Left;
-
-			left=999-(motor->PWM_Left);
-			__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_3,left);
-			__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_4,999);
-		}
-
-	HAL_GPIO_WritePin(EN_MOTOR_GPIO_Port, EN_MOTOR_Pin, motor->enable);
-
 
 }
+
+
 
 void conversionADC()
 {
@@ -480,22 +375,56 @@ void conversionADC()
 	corrienteMR=corrienteMR/0.66;*/
 	// Valores IR en cm  d=65.302-27.77*V
 
-	sharp[3]=adc_value[3]*convVolt;
-	sharp[2]=adc_value[2]*convVolt;
-	sharp[1]=adc_value[1]*convVolt;
-	sharp[0]=adc_value[0]*convVolt;
+	    static uint8_t a=0;
 
-	sharp[3]=65.302-sharp[3]*27.77;
-	sharp[2]=65.302-sharp[2]*27.77;
-	sharp[1]=65.302-sharp[1]*27.77;
-	sharp[0]=65.302-sharp[0]*27.77;
+		media[3][a]=adc_value[3]*convVolt;
+		media[2][a]=adc_value[2]*convVolt;
+		media[1][a]=adc_value[1]*convVolt;
+		media[0][a]=adc_value[0]*convVolt;
+
+		media[3][a]=65.302-media[3][a]*27.77;
+		media[2][a]=65.302-media[2][a]*27.77;
+		media[1][a]=65.302-media[1][a]*27.77;
+		media[0][a]=65.302-media[0][a]*27.77;
+
+		if (++a>=4) {
+			a=0;
+			    float temp;
+			    float fila_temporal[5];
+			    uint8_t size_ = 5;
+			    for (int canal = 0; canal < 4; canal++) {
+			        for (int k = 0; k < size_; k++) {
+			            fila_temporal[k] = media[canal][k];
+			        }
+			        for (int i = 0; i < size_ - 1; i++) {
+			            for (int j = 0; j < size_ - i - 1; j++) {
+			                if (fila_temporal[j] > fila_temporal[j + 1]) {
+			                    temp = fila_temporal[j];
+			                    fila_temporal[j] = fila_temporal[j + 1];
+			                    fila_temporal[j + 1] = temp;
+			                }
+			            }
+			        }
+			        sharp[canal] = fila_temporal[2];
+			    }
+
+		}
+
+
 
 	//validar pulso adc 4
 	if(!combate)
 	{
-		if(adc_value[4]>2900 && adc_value[4]<3500)
+		if (adc_value[4]>3600) {
+			if(!pulsoConstante)
+			{
+				pulsoConstante=true;
+			}
+
+		}
+		else if(adc_value[4]>2900)
 		{
-			if(pulsoConstante==false)
+			if(!pulsoConstante)
 			{
 				seleccionEstrategia++;
 				if(seleccionEstrategia>3)
@@ -505,8 +434,8 @@ void conversionADC()
 				pulsoConstante=true;
 			}
 		}
-		else if (adc_value[4]>1400 && adc_value[4]<2400) {
-			if(pulsoConstante==false)
+		else if (adc_value[4]>1400) {
+			if(!pulsoConstante)
 			{
 				seleccionEstrategia--;
 				if(seleccionEstrategia<0)
@@ -516,19 +445,12 @@ void conversionADC()
 				pulsoConstante=true;
 			}
 		}
-		else if (adc_value[4]>3600 && adc_value[4]<4064) {
-			if(pulsoConstante==false)
-			{
-				pulsoConstante=true;
-			}
 
-		}
 		else{
 			pulsoConstante=false;
 		}
 	}
 	HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, ((seleccionEstrategia)>>1)&1);
-
 	HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, (seleccionEstrategia)&1);
 
 }
@@ -565,7 +487,7 @@ void printADC_IR()
 
 		sprintf(buffer,"\r\n");
 		HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
-		HAL_Delay(500);
+		HAL_Delay(10);
 }
 void printADC_Volt_Amp()
 {
