@@ -94,8 +94,9 @@ bool combate=false;
 float voltaje=0;
 float corrienteML=0;
 float corrienteMR=0;
-float sharp[4]={};
+float sharp[4]={30.0f,30.0f,30.0f,30.0f};
 float media[4][5]={};
+float posicion_final=5.0f;
 
 bool pulsoConstante=false;
 int8_t seleccionEstrategia=0;
@@ -195,7 +196,10 @@ __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_8);
 	  {
 		  LED_OK_GPIO_Port->ODR|=LED_OK_Pin;
 		  conversionADC();
-		  printADC_Volt_Amp();
+			sprintf(buffer,"pos %0.2f ",posicion_final);
+			HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+
+		 printADC_IR();
 	  }
 	  else if (MandoRC5==stop) {
 		  LED_OK_GPIO_Port->ODR&=~LED_OK_Pin;
@@ -386,31 +390,66 @@ void conversionADC()
 		media[2][a]=65.302-media[2][a]*27.77;
 		media[1][a]=65.302-media[1][a]*27.77;
 		media[0][a]=65.302-media[0][a]*27.77;
-
+		static float ultimo[4]={60.0f,60.0f,60.0f,60.0f};
+		static float lineal[4]={};
 		if (++a>=4) {
 			a=0;
-			    float temp;
-			    float fila_temporal[5];
-			    uint8_t size_ = 5;
-			    for (int canal = 0; canal < 4; canal++) {
-			        for (int k = 0; k < size_; k++) {
-			            fila_temporal[k] = media[canal][k];
-			        }
-			        for (int i = 0; i < size_ - 1; i++) {
-			            for (int j = 0; j < size_ - i - 1; j++) {
-			                if (fila_temporal[j] > fila_temporal[j + 1]) {
-			                    temp = fila_temporal[j];
-			                    fila_temporal[j] = fila_temporal[j + 1];
-			                    fila_temporal[j + 1] = temp;
-			                }
-			            }
-			        }
-			        sharp[canal] = fila_temporal[2];
-			    }
+			float temp;
+			float fila_temporal[5];
+			uint8_t size_ = 5;
+			for (int canal = 0; canal < 4; canal++) {
+				for (int k = 0; k < size_; k++) {
+					fila_temporal[k] = media[canal][k];
+				}
+				for (int i = 0; i < size_ - 1; i++) {
+					for (int j = 0; j < size_ - i - 1; j++) {
+						if (fila_temporal[j] > fila_temporal[j + 1]) {
+							temp = fila_temporal[j];
+							fila_temporal[j] = fila_temporal[j + 1];
+							fila_temporal[j + 1] = temp;
+						}
+					}
+				}
+				sharp[canal] = fila_temporal[2];
+				// En esta parte buscamos mazimo y minimo
+				for(uint8_t c=0;c<4;c++){
+					if(sharp[c]>60.0f)
+					{
+						sharp[c]=60.0f;
+					}
+					else if(sharp[c]<3.0f)
+					{
+						sharp[c]=3.0f;
+					}
+					else{
+						sharp[c]=sharp[c];
+					}
+				//Aca vemos que si realiza un cambio abrupto se queda en el ultimo valor
+					const float umbral[4]={5.0f,6.0f,6.0f,5.0f};
+					if(ultimo[c]<umbral[c])
+					{
+						if(sharp[c]==60.0f)
+						{
+							sharp[c]=ultimo[c];
+						}
+					}
+					ultimo[c]=sharp[c];
+					//linealizamos salida
+				    lineal[c]=(60.0f - sharp[c]) / 58.0f;
+				}
+			}
+			float suma_ponderada = (lineal[0] * 0.0f) + (lineal[1] * 1.0f) + (lineal[2] * 2.0f) + (lineal[3] * 3.0f);
+			float suma_total_lecturas = lineal[0]+lineal[1]+lineal[2]+lineal[3];
+			if (suma_total_lecturas > 0.02f) {
+				float centro_bruto = suma_ponderada / suma_total_lecturas;
+				posicion_final = (centro_bruto / 3.0f) * 10.0f;
+			} else {
+			  posicion_final = 5.0f;
+			}
+			if (posicion_final < 0.0f)  posicion_final = 0.0f;
+			if (posicion_final > 10.0f) posicion_final = 10.0f;
 
 		}
-
-
 
 	//validar pulso adc 4
 	if(!combate)
